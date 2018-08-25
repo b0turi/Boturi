@@ -5,9 +5,7 @@ struct GameConfiguration
 {
 private:
 	bool debugMode = false;
-	std::vector<const char *> deviceExtensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
-	};
+	
 	uint32_t version = VK_MAKE_VERSION(1, 0, 0);
 public:
 	int width;

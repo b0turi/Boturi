@@ -7,25 +7,32 @@ bool Boturi::resizedWindow;
 VkInstance Boturi::instance;
 VkDebugReportCallbackEXT Boturi::debugger;
 VkSurfaceKHR Boturi::surface;
+VkPhysicalDevice Boturi::physicalDevice;
+
+int Boturi::graphicsQueueIndex = -1;
+int Boturi::presentQueueIndex = -1;
+
+SwapChainSupportDetails Boturi::swapChainDetails;
 
 GLFWwindow * Boturi::window;
 
+std::vector<const char *> Boturi::deviceExtensions = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 // Used when creating GLFW window
-static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+static void framebufferResizeCallback(GLFWwindow * window, int width, int height) {
 	Boturi::resizedWindow = true;
 }
 
 void makeGlfwWindow(
-	GameConfiguration config, 
-	VkInstance instance, 
-	VkSurfaceKHR & surface, 
-	GLFWwindow ** window)
+	GameConfiguration config, VkSurfaceKHR & surface, GLFWwindow ** window)
 {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	 *window = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
 	glfwSetFramebufferSizeCallback(*window, framebufferResizeCallback);
 
-	glfwCreateWindowSurface(instance, *window, nullptr, &surface);
+	glfwCreateWindowSurface(Boturi::instance, *window, nullptr, &surface);
 }
 
 void Boturi::init(GameConfiguration config)
@@ -36,10 +43,12 @@ void Boturi::init(GameConfiguration config)
 	if (makeVulkanInstance(config, instance) != VK_SUCCESS)
 		printError("Unable to create vulkan instance");
 
-	makeGlfwWindow(config, instance, surface, &window);
+	makeGlfwWindow(config, surface, &window);
 
 	if (debugMode)
-		makeVulkanDebugger(instance, debugger);
+		makeVulkanDebugger(debugger);
+
+	selectPhysicalDevice(physicalDevice, &graphicsQueueIndex, &presentQueueIndex, &swapChainDetails);
 
 	while (!glfwWindowShouldClose(window))
 		glfwPollEvents();
@@ -57,7 +66,7 @@ void Boturi::exit()
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 
 	if (debugMode)
-		destroyVulkanDebugger(instance, debugger);
+		destroyVulkanDebugger(debugger);
 
 	vkDestroyInstance(instance, nullptr);
 

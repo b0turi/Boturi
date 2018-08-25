@@ -127,6 +127,8 @@
   <ItemGroup>
     <ClInclude Include="Boturi.h" />
     <ClInclude Include="GameConfiguration.h" />
+    <ClInclude Include="PhysicalDevice.h" />
+    <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="Vulkan.h" />
     <ClInclude Include="VulkanDebugger.h" />
   </ItemGroup>

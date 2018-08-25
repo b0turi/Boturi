@@ -1,5 +1,6 @@
 #include "Vulkan.h"
 #include "VulkanDebugger.h"
+#include "PhysicalDevice.h"
 
 // Used by makeVulkanInstance
 std::vector<const char*> getRequiredExtensions(bool debugMode) {
@@ -43,7 +44,7 @@ VkResult makeVulkanInstance(GameConfiguration config, VkInstance & instance)
 	return vkCreateInstance(&createInfo, nullptr, &instance);
 }
 
-VkResult makeVulkanDebugger(VkInstance instance, VkDebugUtilsMessengerEXT & debugger)
+VkResult makeVulkanDebugger(VkDebugUtilsMessengerEXT & debugger)
 {
 	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -51,11 +52,32 @@ VkResult makeVulkanDebugger(VkInstance instance, VkDebugUtilsMessengerEXT & debu
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = debugCallback;
 
-	return createDebugger(instance, &createInfo, nullptr, &debugger);
+	return createDebugger(&createInfo, nullptr, &debugger);
 }
 
-void destroyVulkanDebugger(VkInstance instance, VkDebugUtilsMessengerEXT & debugger)
+void destroyVulkanDebugger(VkDebugUtilsMessengerEXT & debugger)
 {
-	destroyDebugger(instance, debugger, nullptr);
+	destroyDebugger(debugger, nullptr);
 }
 
+bool selectPhysicalDevice(
+	VkPhysicalDevice & physicalDevice,
+	int * graphicsQueueIndex,
+	int * presentQueueIndex,
+	SwapChainSupportDetails * swapChainDetails)
+{
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(Boturi::instance, &deviceCount, nullptr);
+
+	std::vector<VkPhysicalDevice> devices(deviceCount);
+	vkEnumeratePhysicalDevices(Boturi::instance, &deviceCount, devices.data());
+
+	for (const auto& device : devices) 
+		if (isDeviceSuitable(device, graphicsQueueIndex, presentQueueIndex, swapChainDetails))
+		{
+			physicalDevice = device;
+			break;
+		}
+
+	return physicalDevice == VK_NULL_HANDLE;
+}
