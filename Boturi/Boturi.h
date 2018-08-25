@@ -21,4 +21,5 @@ private:
 
 	static VkInstance instance;
 	static VkDebugUtilsMessengerEXT debugger;
+	static VkSurfaceKHR surface;
 };

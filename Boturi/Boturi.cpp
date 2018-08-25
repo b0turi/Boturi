@@ -6,6 +6,7 @@ bool Boturi::resizedWindow;
 
 VkInstance Boturi::instance;
 VkDebugReportCallbackEXT Boturi::debugger;
+VkSurfaceKHR Boturi::surface;
 
 GLFWwindow * Boturi::window;
 
@@ -14,11 +15,17 @@ static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	Boturi::resizedWindow = true;
 }
 
-void makeGlfwWindow(GameConfiguration config, GLFWwindow ** window)
+void makeGlfwWindow(
+	GameConfiguration config, 
+	VkInstance instance, 
+	VkSurfaceKHR & surface, 
+	GLFWwindow ** window)
 {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	 *window = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
 	glfwSetFramebufferSizeCallback(*window, framebufferResizeCallback);
+
+	glfwCreateWindowSurface(instance, *window, nullptr, &surface);
 }
 
 void Boturi::init(GameConfiguration config)
@@ -26,10 +33,10 @@ void Boturi::init(GameConfiguration config)
 	glfwInit();
 	debugMode = config.getDebugMode();
 
-	makeGlfwWindow(config, &window);
-
 	if (makeVulkanInstance(config, instance) != VK_SUCCESS)
 		printError("Unable to create vulkan instance");
+
+	makeGlfwWindow(config, instance, surface, &window);
 
 	if (debugMode)
 		makeVulkanDebugger(instance, debugger);
@@ -47,9 +54,13 @@ void Boturi::printError(const char* message)
 
 void Boturi::exit()
 {
+	vkDestroySurfaceKHR(instance, surface, nullptr);
+
 	if (debugMode)
 		destroyVulkanDebugger(instance, debugger);
+
 	vkDestroyInstance(instance, nullptr);
+
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
