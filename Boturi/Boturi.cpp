@@ -4,11 +4,19 @@
 bool Boturi::debugMode;
 bool Boturi::resizedWindow;
 
+// Constants across the environment
+GLFWwindow * Boturi::window;
+
 VkInstance Boturi::instance;
 VkDebugReportCallbackEXT Boturi::debugger;
 VkSurfaceKHR Boturi::surface;
 VkPhysicalDevice Boturi::physicalDevice;
 VkDevice Boturi::device;
+VkSwapchainKHR Boturi::swapChain;
+VkRenderPass Boturi::renderPass;
+
+std::vector<VkImage> Boturi::swapChainImages;
+std::vector<VkImageView> Boturi::swapChainImageViews;
 
 int Boturi::graphicsQueueIndex = -1;
 int Boturi::presentQueueIndex = -1;
@@ -16,9 +24,20 @@ int Boturi::presentQueueIndex = -1;
 VkQueue Boturi::graphicsQueue;
 VkQueue Boturi::presentQueue;
 
-SwapChainSupportDetails Boturi::swapChainDetails;
+uint32_t Boturi::numImages;
 
-GLFWwindow * Boturi::window;
+VkFormat Boturi::depthFormat;
+
+SwapChainSupportDetails Boturi::swapChainDetails;
+VkFormat Boturi::imageFormat;
+VkExtent2D Boturi::extent;
+
+// Dynamically created
+
+Image Boturi::colorAttachment;
+Image Boturi::depthAttachment;
+
+
 
 std::vector<const char *> Boturi::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -57,7 +76,12 @@ void Boturi::init(GameConfiguration config)
 		makeVulkanDebugger(debugger);
 
 	selectPhysicalDevice(physicalDevice, &graphicsQueueIndex, &presentQueueIndex, &swapChainDetails);
-	makeVulkanDevice(device, graphicsQueue, presentQueue);
+	makeVulkanDevice(device);
+
+	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
+
+	addDynamics();
 
 	while (!glfwWindowShouldClose(window))
 		glfwPollEvents();
@@ -70,8 +94,35 @@ void Boturi::printError(const char* message)
 	std::exit(EXIT_FAILURE);
 }
 
+void Boturi::addDynamics()
+{
+	makeSwapChain(swapChain, numImages, imageFormat, extent);
+	fillSwapChain();
+
+	makeRenderPass(renderPass);
+}
+
+void Boturi::removeDynamics()
+{
+	vkDestroyRenderPass(device, renderPass, nullptr);
+
+	for (auto imageView : swapChainImageViews)
+		vkDestroyImageView(device, imageView, nullptr);
+
+	vkDestroySwapchainKHR(device, swapChain, nullptr);
+}
+
+void Boturi::refresh()
+{
+	removeDynamics();
+
+	addDynamics();
+}
+
 void Boturi::exit()
 {
+	removeDynamics();
+
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 

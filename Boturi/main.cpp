@@ -11,7 +11,6 @@ int main()
 	g.debugMode = true;
 	Boturi::init(g);
 
-
 	Boturi::exit();
 	std::getchar();
 	return 0;

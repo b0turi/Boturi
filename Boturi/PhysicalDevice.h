@@ -1,15 +1,31 @@
-// Helper functions for selecting a physical device (graphics card)
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include "GLFW/glfw3.h"
+VkFormat findSupportedFormat(
+	const std::vector<VkFormat>& candidates, 
+	VkImageTiling tiling, 
+	VkFormatFeatureFlags features,
+	VkPhysicalDevice device) {
+	for (VkFormat format : candidates) {
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(device, format, &props);
 
-#include "Boturi.h"
+		if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+			return format;
+		else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+			return format;
+	}
 
-#include <iostream>
-#include <vector>
-#include <set>
-#include <string>
+	throw std::runtime_error("failed to find supported format!");
+}
+
+VkFormat findDepthFormat(VkPhysicalDevice device) {
+	return findSupportedFormat(
+		{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+		VK_IMAGE_TILING_OPTIMAL,
+		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+		device
+	);
+}
 
 std::vector<int> getQueueIndices(VkPhysicalDevice device)
 {
@@ -85,11 +101,7 @@ SwapChainSupportDetails getSwapChainSupport(VkPhysicalDevice device) {
 	return details;
 }
 
-bool isDeviceSuitable(
-	VkPhysicalDevice device, 
-	int * graphicsQueueIndex, 
-	int * presentQueueIndex, 
-	SwapChainSupportDetails * swapChainDetails)
+bool isDeviceSuitable(VkPhysicalDevice device)
 {
 	std::vector<int> indices = getQueueIndices(device);
 	bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -107,10 +119,33 @@ bool isDeviceSuitable(
 
 	if (cond)
 	{
-		*graphicsQueueIndex = indices[0];
-		*presentQueueIndex = indices[1];
-		*swapChainDetails = swapChainSupport;
+		Boturi::graphicsQueueIndex = indices[0];
+		Boturi::presentQueueIndex = indices[1];
+		Boturi::swapChainDetails = swapChainSupport;
+		Boturi::depthFormat = findDepthFormat(device);
 	}
 
 	return true;
+}
+
+bool selectPhysicalDevice(
+	VkPhysicalDevice & physicalDevice,
+	int * graphicsQueueIndex,
+	int * presentQueueIndex,
+	SwapChainSupportDetails * swapChainDetails)
+{
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(Boturi::instance, &deviceCount, nullptr);
+
+	std::vector<VkPhysicalDevice> devices(deviceCount);
+	vkEnumeratePhysicalDevices(Boturi::instance, &deviceCount, devices.data());
+
+	for (const auto& device : devices)
+		if (isDeviceSuitable(device))
+		{
+			physicalDevice = device;
+			break;
+		}
+
+	return physicalDevice == VK_NULL_HANDLE;
 }

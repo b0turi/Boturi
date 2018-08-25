@@ -121,13 +121,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boturi.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boturi.h" />
+    <ClInclude Include="Descriptor.h" />
+    <ClInclude Include="Device.h" />
     <ClInclude Include="GameConfiguration.h" />
+    <ClInclude Include="Image.h" />
+    <ClInclude Include="Instance.h" />
     <ClInclude Include="PhysicalDevice.h" />
+    <ClInclude Include="RenderPass.h" />
+    <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="Vulkan.h" />
     <ClInclude Include="VulkanDebugger.h" />
