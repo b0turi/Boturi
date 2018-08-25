@@ -26,3 +26,5 @@ VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkForma
 void fillSwapChain();
 
 VkResult makeRenderPass(VkRenderPass & renderPass);
+
+VkResult makeFrameBuffers(std::vector<VkFramebuffer> & frameBuffers);

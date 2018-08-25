@@ -6,8 +6,7 @@ VkResult CommandBuffer::makeCommandPool(VkCommandPool & commandPool)
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = Boturi::graphicsQueueIndex;
 
-	if (vkCreateCommandPool(Boturi::device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
-		throw std::runtime_error("failed to create graphics command pool!");
+	return vkCreateCommandPool(Boturi::device, &poolInfo, nullptr, &commandPool);
 }
 
 VkCommandBuffer CommandBuffer::startCommand() {

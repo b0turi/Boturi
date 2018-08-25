@@ -11,6 +11,8 @@ class Boturi
 public:
 	static bool resizedWindow;
 
+	static VkSampleCountFlagBits msaaSamples;
+
 	static void init(GameConfiguration config);
 	static void exit();
 
@@ -49,6 +51,7 @@ public:
 
 	static std::vector<VkImage> swapChainImages;
 	static std::vector<VkImageView> swapChainImageViews;
+	static std::vector<VkFramebuffer> frameBuffers;
 
 	static std::vector<const char *> validationLayers;
 	static std::vector<const char *> deviceExtensions;

@@ -54,5 +54,6 @@ public:
 		VkImageLayout layout,
 		VkImageAspectFlags aspects = VK_IMAGE_ASPECT_COLOR_BIT);
 
+	VkImageView getImageView();
 	void cleanup();
 };

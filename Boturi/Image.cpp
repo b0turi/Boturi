@@ -188,3 +188,5 @@ void Image::cleanup()
 	vkDestroyImage(Boturi::device, image, nullptr);
 	vkFreeMemory(Boturi::device, memory, nullptr);
 }
+
+VkImageView Image::getImageView() { return imageView; }

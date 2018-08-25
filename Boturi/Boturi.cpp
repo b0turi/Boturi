@@ -18,6 +18,7 @@ VkCommandPool Boturi::commandPool;
 
 std::vector<VkImage> Boturi::swapChainImages;
 std::vector<VkImageView> Boturi::swapChainImageViews;
+std::vector<VkFramebuffer> Boturi::frameBuffers;
 
 int Boturi::graphicsQueueIndex = -1;
 int Boturi::presentQueueIndex = -1;
@@ -26,6 +27,7 @@ VkQueue Boturi::graphicsQueue;
 VkQueue Boturi::presentQueue;
 
 uint32_t Boturi::numImages;
+VkSampleCountFlagBits Boturi::msaaSamples;
 
 VkFormat Boturi::depthFormat;
 
@@ -103,17 +105,22 @@ void Boturi::addDynamics()
 	makeRenderPass(renderPass);
 	CommandBuffer::makeCommandPool(commandPool);
 
-	colorAttachment = Image(extent, imageFormat, 1, VK_SAMPLE_COUNT_1_BIT, 
+	colorAttachment = Image(extent, imageFormat, 1, Boturi::msaaSamples, 
 		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-	depthAttachment = Image(extent, depthFormat, 1, VK_SAMPLE_COUNT_1_BIT,
+	depthAttachment = Image(extent, depthFormat, 1, Boturi::msaaSamples,
 		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	makeFrameBuffers(frameBuffers);
 }
 
 void Boturi::removeDynamics()
 {
+	for (auto frameBuffer : frameBuffers)
+		vkDestroyFramebuffer(device, frameBuffer, nullptr);
+
 	colorAttachment.cleanup();
 	depthAttachment.cleanup();
 

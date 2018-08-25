@@ -2,6 +2,7 @@
 
 #include "Image.h"
 #include <algorithm>
+#include <array>
 VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) 
 {
 	if (availableFormats.size() == 1 && availableFormats[0].format == VK_FORMAT_UNDEFINED) 
@@ -122,7 +123,32 @@ void fillSwapChain()
 			VK_IMAGE_ASPECT_COLOR_BIT, 
 			1,
 			Boturi::swapChainImageViews[i]);
+}
 
-	// Create swap chain frame buffers
+VkResult makeFrameBuffers(std::vector<VkFramebuffer> & frameBuffers)
+{
+	frameBuffers.resize(Boturi::swapChainImageViews.size());
 
+	for (size_t i = 0; i < Boturi::swapChainImageViews.size(); i++) 
+	{
+		std::array<VkImageView, 3> attachments = {
+			Boturi::colorAttachment.getImageView(),
+			Boturi::depthAttachment.getImageView(),
+			Boturi::swapChainImageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo = {};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = Boturi::renderPass;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.pAttachments = attachments.data();
+		framebufferInfo.width = Boturi::extent.width;
+		framebufferInfo.height = Boturi::extent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(Boturi::device, &framebufferInfo, nullptr, &frameBuffers[i]) != VK_SUCCESS)
+			return VK_ERROR_FEATURE_NOT_PRESENT;
+	}
+	
+	return VK_SUCCESS;
 }
