@@ -15,4 +15,5 @@ public:
 	Descriptor(std::vector<BindingType> definition);
 
 	void cleanup();
+	VkDescriptorSetLayout getLayout();
 };

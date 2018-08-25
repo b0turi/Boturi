@@ -125,6 +125,7 @@
     <ClCompile Include="Descriptor.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
     <ClCompile Include="Vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="SyncObjects.h" />
+    <ClInclude Include="Vertex.h" />
     <ClInclude Include="Vulkan.h" />
     <ClInclude Include="VulkanDebugger.h" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BindingType.h"
+#include "Vertex.h"
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
 #include "Image.h"

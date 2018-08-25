@@ -49,6 +49,7 @@ std::vector<VkFence> Boturi::inFlightFences;
 std::vector<Descriptor> Boturi::descriptors;
 
 Descriptor d;
+Pipeline p;
 
 
 
@@ -96,13 +97,14 @@ void Boturi::init(GameConfiguration config)
 
 	makeSyncObjects(imageAvailableSemaphores, renderFinishedSemaphores, inFlightFences);
 
+	
+
 	addDynamics();
 
 	// Temporary testing code
 	// TODO: Descriptor sets
 
-	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
-	d = Descriptor(def);
+	
 
 	// end temp
 
@@ -134,18 +136,33 @@ void Boturi::addDynamics()
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	makeFrameBuffers(frameBuffers);
+	// Temp code
+	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
+	d = Descriptor(def);
+
+	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
+	// end temp
 }
 
 void Boturi::removeDynamics()
 {
-	for (auto frameBuffer : frameBuffers)
-		vkDestroyFramebuffer(device, frameBuffer, nullptr);
-
 	colorAttachment.cleanup();
 	depthAttachment.cleanup();
 
+	for (auto frameBuffer : frameBuffers)
+		vkDestroyFramebuffer(device, frameBuffer, nullptr);
+
+	
+
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
+
+	// Temp code
+
+	d.cleanup();
+	p.cleanup();
+
+	// end temp
 
 	for (auto imageView : swapChainImageViews)
 		vkDestroyImageView(device, imageView, nullptr);
@@ -170,12 +187,6 @@ void Boturi::refresh()
 
 void Boturi::exit()
 {
-	// Temp code
-
-	d.cleanup();
-
-	// End Temp
-
 	removeDynamics();
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

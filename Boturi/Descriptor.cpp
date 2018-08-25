@@ -126,3 +126,5 @@ void Descriptor::cleanup()
 	vkDestroyDescriptorPool(Boturi::device, pool, nullptr);
 	vkDestroyDescriptorSetLayout(Boturi::device, layout, nullptr);
 }
+
+VkDescriptorSetLayout Descriptor::getLayout() { return layout; }
