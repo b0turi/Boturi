@@ -8,7 +8,6 @@ class Boturi
 {
 public:
 	static bool resizedWindow;
-	static VkPhysicalDevice physicalDevice;
 
 	static void init(GameConfiguration config);
 	static void exit();
@@ -19,15 +18,18 @@ public:
 	static int graphicsQueueIndex;
 	static int presentQueueIndex;
 
+	static VkQueue graphicsQueue;
+	static VkQueue presentQueue;
+
 	static SwapChainSupportDetails swapChainDetails;
 
 	static VkInstance instance;
 	static VkDebugUtilsMessengerEXT debugger;
 	static VkSurfaceKHR surface;
+	static VkPhysicalDevice physicalDevice;
+	static VkDevice device;
 
+	static std::vector<const char *> validationLayers;
 	static std::vector<const char *> deviceExtensions;
-private:
 	static bool debugMode;
-
-	
 };

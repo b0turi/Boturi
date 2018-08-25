@@ -16,3 +16,5 @@ bool selectPhysicalDevice(
 	int * graphicsQueueIndex,
 	int * presentQueueIndex,
 	SwapChainSupportDetails * swapChainDetails);
+
+VkResult makeVulkanDevice(VkDevice & device, VkQueue & graphicsQueue, VkQueue & presentQueue);

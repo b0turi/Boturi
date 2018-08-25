@@ -30,13 +30,13 @@ VkResult makeVulkanInstance(GameConfiguration config, VkInstance & instance)
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	auto extensions = getRequiredExtensions(config.getDebugMode());
+	auto extensions = getRequiredExtensions(config.debugMode);
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	if (config.getDebugMode()) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(config.validationLayers.size());
-		createInfo.ppEnabledLayerNames = config.validationLayers.data();
+	if (config.debugMode) {
+		createInfo.enabledLayerCount = static_cast<uint32_t>(Boturi::validationLayers.size());
+		createInfo.ppEnabledLayerNames = Boturi::validationLayers.data();
 	}
 	else 
 		createInfo.enabledLayerCount = 0;
@@ -80,4 +80,53 @@ bool selectPhysicalDevice(
 		}
 
 	return physicalDevice == VK_NULL_HANDLE;
+}
+
+VkResult makeVulkanDevice(VkDevice & device, VkQueue & graphicsQueue, VkQueue & presentQueue)
+{
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::set<int> uniqueQueueFamilies = { 
+		Boturi::graphicsQueueIndex,
+		Boturi::presentQueueIndex
+	};
+
+	float queuePriority = 1.0f;
+	for (int queueFamily : uniqueQueueFamilies) 
+	{
+		VkDeviceQueueCreateInfo queueCreateInfo = {};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
+
+	VkPhysicalDeviceFeatures deviceFeatures = {};
+	deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+	VkDeviceCreateInfo createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
+	createInfo.pEnabledFeatures = &deviceFeatures;
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(Boturi::deviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = Boturi::deviceExtensions.data();
+
+	if (Boturi::debugMode) {
+		createInfo.enabledLayerCount = static_cast<uint32_t>(Boturi::validationLayers.size());
+		createInfo.ppEnabledLayerNames = Boturi::validationLayers.data();
+	}
+	else {
+		createInfo.enabledLayerCount = 0;
+	}
+
+	if (vkCreateDevice(Boturi::physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create logical device!");
+	}
+
+	vkGetDeviceQueue(device, Boturi::graphicsQueueIndex, 0, &graphicsQueue);
+	vkGetDeviceQueue(device, Boturi::presentQueueIndex, 0, &presentQueue);
 }

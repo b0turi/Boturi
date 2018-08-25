@@ -8,7 +8,7 @@ int main()
 	g.height = 450;
 
 	g.title = "New Game";
-	g.setDebugMode(true);
+	g.debugMode = true;
 	Boturi::init(g);
 
 

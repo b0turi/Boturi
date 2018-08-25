@@ -8,9 +8,13 @@ VkInstance Boturi::instance;
 VkDebugReportCallbackEXT Boturi::debugger;
 VkSurfaceKHR Boturi::surface;
 VkPhysicalDevice Boturi::physicalDevice;
+VkDevice Boturi::device;
 
 int Boturi::graphicsQueueIndex = -1;
 int Boturi::presentQueueIndex = -1;
+
+VkQueue Boturi::graphicsQueue;
+VkQueue Boturi::presentQueue;
 
 SwapChainSupportDetails Boturi::swapChainDetails;
 
@@ -18,6 +22,10 @@ GLFWwindow * Boturi::window;
 
 std::vector<const char *> Boturi::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+std::vector<const char *> Boturi::validationLayers = {
+	"VK_LAYER_LUNARG_standard_validation" 
 };
 
 // Used when creating GLFW window
@@ -38,7 +46,7 @@ void makeGlfwWindow(
 void Boturi::init(GameConfiguration config)
 {
 	glfwInit();
-	debugMode = config.getDebugMode();
+	debugMode = config.debugMode;
 
 	if (makeVulkanInstance(config, instance) != VK_SUCCESS)
 		printError("Unable to create vulkan instance");
@@ -49,6 +57,7 @@ void Boturi::init(GameConfiguration config)
 		makeVulkanDebugger(debugger);
 
 	selectPhysicalDevice(physicalDevice, &graphicsQueueIndex, &presentQueueIndex, &swapChainDetails);
+	makeVulkanDevice(device, graphicsQueue, presentQueue);
 
 	while (!glfwWindowShouldClose(window))
 		glfwPollEvents();
@@ -63,6 +72,7 @@ void Boturi::printError(const char* message)
 
 void Boturi::exit()
 {
+	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 
 	if (debugMode)
