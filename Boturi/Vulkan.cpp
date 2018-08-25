@@ -7,4 +7,3 @@
 #include "Device.h"
 #include "SwapChain.h"
 #include "RenderPass.h"
-#include "Descriptor.h"

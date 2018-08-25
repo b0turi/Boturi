@@ -35,10 +35,14 @@ SwapChainSupportDetails Boturi::swapChainDetails;
 VkFormat Boturi::imageFormat;
 VkExtent2D Boturi::extent;
 
-// Dynamically created
-
 Image Boturi::colorAttachment;
 Image Boturi::depthAttachment;
+
+// Dynamically created
+
+std::vector<Descriptor> Boturi::descriptors;
+
+Descriptor d;
 
 
 
@@ -85,6 +89,14 @@ void Boturi::init(GameConfiguration config)
 	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
 
 	addDynamics();
+
+	// Temporary testing code
+	// TODO: Descriptor sets
+
+	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
+	d = Descriptor(def);
+
+	// end temp
 
 	while (!glfwWindowShouldClose(window))
 		glfwPollEvents();
@@ -135,6 +147,14 @@ void Boturi::removeDynamics()
 
 void Boturi::refresh()
 {
+	int width = 0, height = 0;
+	while (width == 0 || height == 0) {
+		glfwGetFramebufferSize(window, &width, &height);
+		glfwWaitEvents();
+	}
+
+	vkDeviceWaitIdle(device);
+
 	removeDynamics();
 
 	addDynamics();
@@ -142,6 +162,12 @@ void Boturi::refresh()
 
 void Boturi::exit()
 {
+	// Temp code
+
+	d.cleanup();
+
+	// End Temp
+
 	removeDynamics();
 
 	vkDestroyDevice(device, nullptr);

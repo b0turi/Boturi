@@ -1,9 +1,11 @@
 #pragma once
 
+#include "BindingType.h"
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
 #include "Image.h"
 #include "Commands.h"
+#include "Descriptor.h"
 #include <iostream>
 
 class Boturi
@@ -56,4 +58,6 @@ public:
 	static std::vector<const char *> validationLayers;
 	static std::vector<const char *> deviceExtensions;
 	static bool debugMode;
+
+	static std::vector<Descriptor> descriptors;
 };

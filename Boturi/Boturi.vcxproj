@@ -122,11 +122,13 @@
   <ItemGroup>
     <ClCompile Include="Boturi.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
+    <ClCompile Include="Descriptor.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BindingType.h" />
     <ClInclude Include="Boturi.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="Descriptor.h" />
