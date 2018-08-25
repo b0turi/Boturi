@@ -110,6 +110,8 @@ VkResult Descriptor::makeDescriptorSets(std::vector<BindingType> definition)
 
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}*/
+
+	return VK_SUCCESS;
 }
 
 Descriptor::Descriptor(std::vector<BindingType> definition) 

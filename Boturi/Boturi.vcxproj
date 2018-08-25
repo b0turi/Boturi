@@ -138,9 +138,11 @@
     <ClInclude Include="Instance.h" />
     <ClInclude Include="MemoryType.h" />
     <ClInclude Include="PhysicalDevice.h" />
+    <ClInclude Include="Pipeline.h" />
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
+    <ClInclude Include="SyncObjects.h" />
     <ClInclude Include="Vulkan.h" />
     <ClInclude Include="VulkanDebugger.h" />
   </ItemGroup>

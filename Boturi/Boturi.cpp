@@ -4,6 +4,8 @@
 bool Boturi::debugMode;
 bool Boturi::resizedWindow;
 
+const int Boturi::MAX_FRAMES_IN_FLIGHT = 2;
+
 // Constants across the environment
 GLFWwindow * Boturi::window;
 
@@ -37,6 +39,10 @@ VkExtent2D Boturi::extent;
 
 Image Boturi::colorAttachment;
 Image Boturi::depthAttachment;
+
+std::vector<VkSemaphore> Boturi::imageAvailableSemaphores;
+std::vector<VkSemaphore> Boturi::renderFinishedSemaphores;
+std::vector<VkFence> Boturi::inFlightFences;
 
 // Dynamically created
 
@@ -87,6 +93,8 @@ void Boturi::init(GameConfiguration config)
 
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
+
+	makeSyncObjects(imageAvailableSemaphores, renderFinishedSemaphores, inFlightFences);
 
 	addDynamics();
 
@@ -169,6 +177,13 @@ void Boturi::exit()
 	// End Temp
 
 	removeDynamics();
+
+	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(device, inFlightFences[i], nullptr);
+	}
 
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);

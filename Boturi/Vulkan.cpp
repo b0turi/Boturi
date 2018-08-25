@@ -7,3 +7,4 @@
 #include "Device.h"
 #include "SwapChain.h"
 #include "RenderPass.h"
+#include "SyncObjects.h"

@@ -28,3 +28,6 @@ void fillSwapChain();
 VkResult makeRenderPass(VkRenderPass & renderPass);
 
 VkResult makeFrameBuffers(std::vector<VkFramebuffer> & frameBuffers);
+VkResult makeSyncObjects(std::vector<VkSemaphore> & imgSemaphores, 
+						 std::vector<VkSemaphore> & renSemaphores, 
+						 std::vector<VkFence> & iffs);

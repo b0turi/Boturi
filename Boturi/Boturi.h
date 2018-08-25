@@ -6,11 +6,13 @@
 #include "Image.h"
 #include "Commands.h"
 #include "Descriptor.h"
+#include "Pipeline.h"
 #include <iostream>
 
 class Boturi
 {
 public:
+	static const int MAX_FRAMES_IN_FLIGHT;
 	static bool resizedWindow;
 
 	static VkSampleCountFlagBits msaaSamples;
@@ -58,6 +60,11 @@ public:
 	static std::vector<const char *> validationLayers;
 	static std::vector<const char *> deviceExtensions;
 	static bool debugMode;
+
+	static std::vector<VkSemaphore> imageAvailableSemaphores;
+	static std::vector<VkSemaphore> renderFinishedSemaphores;
+	static std::vector<VkFence> inFlightFences;
+	static size_t currentFrame;
 
 	static std::vector<Descriptor> descriptors;
 };
