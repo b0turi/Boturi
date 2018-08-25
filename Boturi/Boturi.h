@@ -3,6 +3,7 @@
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
 #include "Image.h"
+#include "Commands.h"
 #include <iostream>
 
 class Boturi
@@ -44,6 +45,7 @@ public:
 	static VkDevice device;
 	static VkSwapchainKHR swapChain;
 	static VkRenderPass renderPass;
+	static VkCommandPool commandPool;
 
 	static std::vector<VkImage> swapChainImages;
 	static std::vector<VkImageView> swapChainImageViews;

@@ -14,6 +14,7 @@ VkPhysicalDevice Boturi::physicalDevice;
 VkDevice Boturi::device;
 VkSwapchainKHR Boturi::swapChain;
 VkRenderPass Boturi::renderPass;
+VkCommandPool Boturi::commandPool;
 
 std::vector<VkImage> Boturi::swapChainImages;
 std::vector<VkImageView> Boturi::swapChainImageViews;
@@ -100,10 +101,23 @@ void Boturi::addDynamics()
 	fillSwapChain();
 
 	makeRenderPass(renderPass);
+	CommandBuffer::makeCommandPool(commandPool);
+
+	colorAttachment = Image(extent, imageFormat, 1, VK_SAMPLE_COUNT_1_BIT, 
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	depthAttachment = Image(extent, depthFormat, 1, VK_SAMPLE_COUNT_1_BIT,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void Boturi::removeDynamics()
 {
+	colorAttachment.cleanup();
+	depthAttachment.cleanup();
+
+	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
 	for (auto imageView : swapChainImageViews)

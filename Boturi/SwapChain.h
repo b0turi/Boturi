@@ -116,9 +116,12 @@ void fillSwapChain()
 	// Create swap chain image views
 	Boturi::swapChainImageViews.resize(Boturi::swapChainImages.size());
 	for (uint32_t i = 0; i < Boturi::swapChainImages.size(); i++)
-		Boturi::swapChainImageViews[i] = Image::makeImageView(Boturi::swapChainImages[i], 
-														Boturi::imageFormat, 
-														VK_IMAGE_ASPECT_COLOR_BIT, 1);
+		Image::makeImageView(
+			Boturi::swapChainImages[i], 
+			Boturi::imageFormat, 
+			VK_IMAGE_ASPECT_COLOR_BIT, 
+			1,
+			Boturi::swapChainImageViews[i]);
 
 	// Create swap chain frame buffers
 
