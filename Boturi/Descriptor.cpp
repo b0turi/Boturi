@@ -118,8 +118,6 @@ VkResult Descriptor::makeDescriptorSets(
 			descriptorSet.dstArrayElement = 0;
 			descriptorSet.descriptorCount = 1;
 
-			std::cout << definition[j] << std::endl;
-
 			switch (definition[j])
 			{
 			case UNIFORM_BUFFER:

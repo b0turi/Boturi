@@ -23,7 +23,11 @@ bool selectPhysicalDevice(
 
 VkResult makeVulkanDevice(VkDevice & device);
 
-VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkFormat & imageFormat, VkExtent2D & extent);
+VkResult makeSwapChain(VkSwapchainKHR & swapChain, 
+						uint32_t & numImages,
+						VkFormat & imageFormat, 
+						VkExtent2D & extent);
+
 void fillSwapChain();
 
 VkResult makeRenderPass(VkRenderPass & renderPass);

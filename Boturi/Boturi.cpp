@@ -80,7 +80,7 @@ std::vector<const char *> Boturi::validationLayers = {
 
 // Used when creating GLFW window
 static void framebufferResizeCallback(GLFWwindow * window, int width, int height) {
-	Boturi::resizedWindow = true;
+	Boturi::refresh();
 }
 
 void makeGlfwWindow(
@@ -110,27 +110,43 @@ void Boturi::init(GameConfiguration config)
 	selectPhysicalDevice(physicalDevice, &graphicsQueueIndex, &presentQueueIndex, &swapChainDetails);
 	makeVulkanDevice(device);
 
+	CommandBuffer::makeCommandPool(commandPool);
+
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
 
+	makeSwapChain(swapChain, numImages, imageFormat, extent);
+	fillSwapChain();
+
+	makeRenderPass(renderPass);
+
+	colorAttachment = Image(extent, imageFormat, 1, Boturi::msaaSamples,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	depthAttachment = Image(extent, depthFormat, 1, Boturi::msaaSamples,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	makeFrameBuffers(frameBuffers);
+
 	makeSyncObjects(imageAvailableSemaphores, renderFinishedSemaphores, inFlightFences);
 
+	// TEMP
 
-	addDynamics();
-	// Temporary testing code
-	// TODO: Descriptor sets
 	t = Texture("textures/asdf.jpg");
 	m = Mesh("models/cube.obj");
+	u = UniformBuffer(MVP_MATRIX);
 
 	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
 	d = Descriptor(def);
-	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
-	u = UniformBuffer(MVP_MATRIX);
 
 	std::vector<UniformBuffer> us = { u };
 	std::vector<Texture> ts = { t };
 
 	d.makeDescriptorSets(def, us, ts);
+	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
+	c = CommandBuffer(p, m, d);
 
 	mvp = {};
 	mvp.model = glm::mat4(1.0f);
@@ -138,7 +154,6 @@ void Boturi::init(GameConfiguration config)
 	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
 	mvp.projection[1][1] *= -1;
 
-	c = CommandBuffer(p, m, d);
 
 	// end temp
 
@@ -158,29 +173,10 @@ void Boturi::printError(const char* message)
 	std::exit(EXIT_FAILURE);
 }
 
-void Boturi::addDynamics()
-{
-	makeSwapChain(swapChain, numImages, imageFormat, extent);
-	fillSwapChain();
-
-	makeRenderPass(renderPass);
-	CommandBuffer::makeCommandPool(commandPool);
-
-	colorAttachment = Image(extent, imageFormat, 1, Boturi::msaaSamples, 
-		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
-	depthAttachment = Image(extent, depthFormat, 1, Boturi::msaaSamples,
-		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
-
-	makeFrameBuffers(frameBuffers);
-}
-
 void Boturi::removeDynamics()
 {
-	colorAttachment.cleanup();
 	depthAttachment.cleanup();
+	colorAttachment.cleanup();
 
 	for (auto frameBuffer : frameBuffers)
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
@@ -192,7 +188,6 @@ void Boturi::removeDynamics()
 
 	// end temp
 
-	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
 	for (auto imageView : swapChainImageViews)
@@ -213,7 +208,24 @@ void Boturi::refresh()
 
 	removeDynamics();
 
-	addDynamics();
+	makeSwapChain(swapChain, numImages, imageFormat, extent);
+	fillSwapChain();
+
+	makeRenderPass(renderPass);
+
+	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
+
+	colorAttachment = Image(extent, imageFormat, 1, Boturi::msaaSamples,
+		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+	depthAttachment = Image(extent, depthFormat, 1, Boturi::msaaSamples,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+	makeFrameBuffers(frameBuffers);
+
+	c = CommandBuffer(p, m, d);
 }
 
 void Boturi::exit()
@@ -235,6 +247,8 @@ void Boturi::exit()
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
+
+	vkDestroyCommandPool(device, commandPool, nullptr);
 
 	vkDestroyDevice(device, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
@@ -271,6 +285,11 @@ size_t Boturi::getUniformSize(UniformType type)
 
 void Boturi::draw()
 {
+	static auto startTime = std::chrono::high_resolution_clock::now();
+
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
 	auto start = std::chrono::system_clock::now();
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
@@ -285,7 +304,7 @@ void Boturi::draw()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	mvp.model = glm::translate(mvp.model, glm::vec3(-0.001f, -0.001f, -0.001f));
+	mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	u.update(&mvp, imageIndex);
 
 	VkSubmitInfo submitInfo = {};

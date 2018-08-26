@@ -42,6 +42,8 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 		int width, height;
 		glfwGetFramebufferSize(Boturi::window, &width, &height);
 
+		std::cout << width << ", " << height << std::endl;
+
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),
 			static_cast<uint32_t>(height)
@@ -59,7 +61,7 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 
 VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkFormat & imageFormat, VkExtent2D & extent)
 {
-
+	Boturi::swapChainDetails = getSwapChainSupport(Boturi::physicalDevice);
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(Boturi::swapChainDetails.formats);
 	VkPresentModeKHR presentMode = chooseSwapPresentMode(Boturi::swapChainDetails.presentModes);
 	VkExtent2D ext = chooseSwapExtent(Boturi::swapChainDetails.capabilities);
@@ -102,7 +104,7 @@ VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkForma
 	numImages = imageCount;
 	imageFormat = surfaceFormat.format;
 	extent = ext;
-	Boturi::aspectRatio = ext.width / (float)ext.height;
+	Boturi::aspectRatio = 2;
 
 	return vkCreateSwapchainKHR(Boturi::device, &createInfo, nullptr, &swapChain);
 }

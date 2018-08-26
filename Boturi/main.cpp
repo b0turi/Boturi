@@ -1,6 +1,11 @@
 #include "Boturi.h"
+#include <Windows.h>
 
-int main()
+int CALLBACK WinMain(
+	_In_ HINSTANCE hInstance,
+	_In_ HINSTANCE hPrevInstance,
+	_In_ LPSTR     lpCmdLine,
+	_In_ int       nCmdShow)
 {
 	GameConfiguration g = {};
 
@@ -8,10 +13,9 @@ int main()
 	g.height = 450;
 
 	g.title = "New Game";
-	g.debugMode = true;
+	g.debugMode = false;
 	Boturi::init(g);
 
 	Boturi::exit();
-	std::getchar();
 	return 0;
 }
