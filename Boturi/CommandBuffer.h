@@ -13,4 +13,5 @@ public:
 	CommandBuffer(Pipeline pipeline, Mesh mesh, Descriptor descriptor);
 
 	void cleanup();
+	VkCommandBuffer getCommandBuffer(uint32_t index);
 };

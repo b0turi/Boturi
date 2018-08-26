@@ -107,3 +107,5 @@ void CommandBuffer::cleanup()
 	vkFreeCommandBuffers(Boturi::device, Boturi::commandPool, 
 			static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 }
+
+VkCommandBuffer CommandBuffer::getCommandBuffer(uint32_t index) { return commandBuffers[index]; }

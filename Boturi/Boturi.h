@@ -81,4 +81,6 @@ public:
 	static size_t getUniformSize(UniformType type);
 
 	static float aspectRatio;
+
+	static void draw();
 };
