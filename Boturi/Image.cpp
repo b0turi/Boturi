@@ -1,6 +1,6 @@
 #include "Boturi.h"
 #include "MemoryType.h"
-#include "Commands.h"
+#include "CommandBuffer.h"
 
 void Image::makeImageView(
 	VkImage image,

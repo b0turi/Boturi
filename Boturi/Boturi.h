@@ -4,14 +4,15 @@
 #include "Vertex.h"
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
+#include "Uniforms.h"
 #include "Image.h"
 #include "Buffer.h"
-#include "Commands.h"
+#include "CommandBuffer.h"
+#include "UniformBuffer.h"
+#include "Texture.h"
 #include "Descriptor.h"
 #include "Pipeline.h"
-#include "Texture.h"
 #include "Mesh.h"
-#include "UniformBuffer.h"
 #include <iostream>
 #include <map>
 
@@ -77,4 +78,7 @@ public:
 	static std::vector<Descriptor> descriptors;
 
 	static VkSampler getTextureSampler(int mipLevel);
+	static size_t getUniformSize(UniformType type);
+
+	static float aspectRatio;
 };

@@ -5,6 +5,7 @@
 
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
+#include "Uniforms.h"
 #include <vector>
 #include <set>
 #include <string>

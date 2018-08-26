@@ -136,7 +136,7 @@
     <ClInclude Include="BindingType.h" />
     <ClInclude Include="Boturi.h" />
     <ClInclude Include="Buffer.h" />
-    <ClInclude Include="Commands.h" />
+    <ClInclude Include="CommandBuffer.h" />
     <ClInclude Include="Descriptor.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="GameConfiguration.h" />

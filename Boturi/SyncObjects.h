@@ -15,7 +15,7 @@ VkResult makeSyncObjects(std::vector<VkSemaphore> & imgSemaphores,
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (size_t i = 0; i < Boturi::MAX_FRAMES_IN_FLIGHT; i++) 
+	for (int i = 0; i < Boturi::MAX_FRAMES_IN_FLIGHT; i++) 
 	{
 		if (vkCreateSemaphore(Boturi::device, &semaphoreInfo, nullptr, &imgSemaphores[i]) != VK_SUCCESS ||
 			vkCreateSemaphore(Boturi::device, &semaphoreInfo, nullptr, &renSemaphores[i]) != VK_SUCCESS ||

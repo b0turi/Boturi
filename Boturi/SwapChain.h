@@ -102,6 +102,7 @@ VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkForma
 	numImages = imageCount;
 	imageFormat = surfaceFormat.format;
 	extent = ext;
+	Boturi::aspectRatio = ext.width / (float)ext.height;
 
 	return vkCreateSwapchainKHR(Boturi::device, &createInfo, nullptr, &swapChain);
 }

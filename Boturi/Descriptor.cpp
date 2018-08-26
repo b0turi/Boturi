@@ -66,9 +66,32 @@ VkResult Descriptor::makeDescriptorPool(std::vector<BindingType> definition)
 	return vkCreateDescriptorPool(Boturi::device, &poolInfo, nullptr, &pool);
 }
 
-VkResult Descriptor::makeDescriptorSets(std::vector<BindingType> definition)
+VkDescriptorBufferInfo getBufferInfo(UniformBuffer buffer, int index)
 {
-	/*std::vector<VkDescriptorSetLayout> layouts(Boturi::numImages, layout);
+	VkDescriptorBufferInfo bufferInfo = {};
+	bufferInfo.buffer = buffer.getBuffer(index);
+	bufferInfo.offset = 0;
+	bufferInfo.range = Boturi::getUniformSize(buffer.getUniformType());
+
+	return bufferInfo;
+}
+
+VkDescriptorImageInfo getImageInfo(Texture texture)
+{
+	VkDescriptorImageInfo imageInfo = {};
+	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	imageInfo.imageView = texture.getImageView();
+	imageInfo.sampler = Boturi::getTextureSampler(texture.getMipLevels());
+
+	return imageInfo;
+}
+
+VkResult Descriptor::makeDescriptorSets(
+	std::vector<BindingType> definition, 
+	std::vector<UniformBuffer> uniforms, 
+	std::vector<Texture> textures)
+{
+	std::vector<VkDescriptorSetLayout> layouts(Boturi::numImages, layout);
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = pool;
@@ -79,37 +102,44 @@ VkResult Descriptor::makeDescriptorSets(std::vector<BindingType> definition)
 	if (vkAllocateDescriptorSets(Boturi::device, &allocInfo, &sets[0]) != VK_SUCCESS)
 		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 
-	for (int i = 0; i < Boturi::numImages; i++) {
-		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = uniformBuffers[i];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(UniformBufferObject);
+	for (int i = 0; i < Boturi::numImages; i++) 
+	{
+		int uPtr = 0;
+		int tPtr = 0;
+		std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-		VkDescriptorImageInfo imageInfo = {};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
-		imageInfo.sampler = textureSampler;
+		for (int j = 0; j < definition.size(); j++)
+		{
+			VkWriteDescriptorSet descriptorSet = {};
 
-		std::array<VkWriteDescriptorSet, 2> descriptorWrites = {};
+			descriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorSet.dstSet = sets[i];
+			descriptorSet.dstBinding = j;
+			descriptorSet.dstArrayElement = 0;
+			descriptorSet.descriptorCount = 1;
 
-		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[0].dstSet = descriptorSets[i];
-		descriptorWrites[0].dstBinding = 0;
-		descriptorWrites[0].dstArrayElement = 0;
-		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[0].descriptorCount = 1;
-		descriptorWrites[0].pBufferInfo = &bufferInfo;
+			std::cout << definition[j] << std::endl;
 
-		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[1].dstSet = descriptorSets[i];
-		descriptorWrites[1].dstBinding = 1;
-		descriptorWrites[1].dstArrayElement = 0;
-		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorWrites[1].descriptorCount = 1;
-		descriptorWrites[1].pImageInfo = &imageInfo;
+			switch (definition[j])
+			{
+			case UNIFORM_BUFFER:
+				descriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorSet.pBufferInfo = &getBufferInfo(uniforms[uPtr], i);
+				uPtr++;
+				break;
+			case TEXTURE_SAMPLER:
+				descriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorSet.pImageInfo = &getImageInfo(textures[tPtr]);
+				tPtr++;
+				break;
+			}
 
-		vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-	}*/
+			descriptorWrites.push_back(descriptorSet);
+		}
+
+		vkUpdateDescriptorSets(Boturi::device, static_cast<uint32_t>(descriptorWrites.size()), 
+								descriptorWrites.data(), 0, nullptr);
+	}
 
 	return VK_SUCCESS;
 }
@@ -118,7 +148,6 @@ Descriptor::Descriptor(std::vector<BindingType> definition)
 {
 	makeDescriptorSetLayout(definition);
 	makeDescriptorPool(definition);
-	//makeDescriptorSets(definition);
 }
 
 void Descriptor::cleanup()

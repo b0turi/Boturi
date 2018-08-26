@@ -1,6 +1,13 @@
 #include "Boturi.h"
 #include "Vulkan.h"
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
+
 bool Boturi::debugMode;
 bool Boturi::resizedWindow;
 
@@ -49,10 +56,15 @@ std::vector<VkFence> Boturi::inFlightFences;
 
 std::vector<Descriptor> Boturi::descriptors;
 
+float Boturi::aspectRatio;
+
 Descriptor d;
 Pipeline p;
 Texture t;
 Mesh m;
+UniformBuffer u;
+MVPMatrix mvp;
+
 
 std::vector<const char *> Boturi::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -109,6 +121,18 @@ void Boturi::init(GameConfiguration config)
 	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
 	d = Descriptor(def);
 	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
+	u = UniformBuffer(MVP_MATRIX);
+
+	std::vector<UniformBuffer> us = { u };
+	std::vector<Texture> ts = { t };
+
+	d.makeDescriptorSets(def, us, ts);
+
+	mvp = {};
+	mvp.model = glm::mat4(1.0f);
+	mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+	mvp.projection[1][1] *= -1;
 
 	// end temp
 
@@ -192,6 +216,7 @@ void Boturi::exit()
 
 	t.cleanup();
 	m.cleanup();
+	u.cleanup();
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -217,4 +242,18 @@ VkSampler Boturi::getTextureSampler(int mipLevel)
 	if (textureSamplers.find(mipLevel) == textureSamplers.end())
 		textureSamplers[mipLevel] = Texture::makeTextureSampler(mipLevel);
 	return textureSamplers[mipLevel];
+}
+
+size_t Boturi::getUniformSize(UniformType type)
+{
+	switch (type)
+	{
+	case MVP_MATRIX:
+		return sizeof(MVPMatrix);
+		break;
+	default:
+		Boturi::printError("The given uniform type does not exist");
+		return 0;
+		break;
+	}
 }
