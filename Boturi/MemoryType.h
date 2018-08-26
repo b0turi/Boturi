@@ -1,5 +1,5 @@
 #pragma once
-uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+static uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(Boturi::physicalDevice, &memProperties);
 

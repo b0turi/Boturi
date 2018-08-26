@@ -5,13 +5,18 @@
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
 #include "Image.h"
+#include "Buffer.h"
 #include "Commands.h"
 #include "Descriptor.h"
 #include "Pipeline.h"
+#include "Texture.h"
+#include "Mesh.h"
 #include <iostream>
 
 class Boturi
 {
+private:
+	static VkSampler * textureSamplers[64];
 public:
 	static const int MAX_FRAMES_IN_FLIGHT;
 	static bool resizedWindow;

@@ -14,8 +14,8 @@ protected:
 		VkMemoryPropertyFlags properties,
 		VkImageLayout layout,
 		VkImageAspectFlags aspects);
-private:
 	VkImage image;
+private:
 	VkDeviceMemory memory;
 	VkImageView imageView;
 public:

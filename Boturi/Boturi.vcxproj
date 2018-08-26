@@ -121,16 +121,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Boturi.cpp" />
+    <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Descriptor.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Vulkan.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BindingType.h" />
     <ClInclude Include="Boturi.h" />
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="Descriptor.h" />
     <ClInclude Include="Device.h" />
@@ -138,12 +142,14 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="Instance.h" />
     <ClInclude Include="MemoryType.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="PhysicalDevice.h" />
     <ClInclude Include="Pipeline.h" />
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="SwapChain.h" />
     <ClInclude Include="SwapChainSupportDetails.h" />
     <ClInclude Include="SyncObjects.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Vulkan.h" />
     <ClInclude Include="VulkanDebugger.h" />

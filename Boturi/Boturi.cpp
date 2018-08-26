@@ -5,6 +5,7 @@ bool Boturi::debugMode;
 bool Boturi::resizedWindow;
 
 const int Boturi::MAX_FRAMES_IN_FLIGHT = 2;
+VkSampler * Boturi::textureSamplers[64];
 
 // Constants across the environment
 GLFWwindow * Boturi::window;
@@ -50,6 +51,8 @@ std::vector<Descriptor> Boturi::descriptors;
 
 Descriptor d;
 Pipeline p;
+Texture t;
+Mesh m;
 
 
 
@@ -97,14 +100,12 @@ void Boturi::init(GameConfiguration config)
 
 	makeSyncObjects(imageAvailableSemaphores, renderFinishedSemaphores, inFlightFences);
 
-	
 
 	addDynamics();
-
 	// Temporary testing code
 	// TODO: Descriptor sets
-
-	
+	t = Texture("textures/texture.jpg");
+	m = Mesh("models/cube.obj");
 
 	// end temp
 
@@ -188,6 +189,9 @@ void Boturi::refresh()
 void Boturi::exit()
 {
 	removeDynamics();
+
+	t.cleanup();
+	m.cleanup();
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
