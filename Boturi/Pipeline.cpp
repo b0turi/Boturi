@@ -208,3 +208,6 @@ void Pipeline::cleanup()
 	vkDestroyPipeline(Boturi::device, pipeline, nullptr);
 	vkDestroyPipelineLayout(Boturi::device, layout, nullptr);
 }
+
+VkPipeline Pipeline::getPipeline() { return pipeline; }
+VkPipelineLayout Pipeline::getLayout() { return layout; }

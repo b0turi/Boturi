@@ -64,6 +64,7 @@ Texture t;
 Mesh m;
 UniformBuffer u;
 MVPMatrix mvp;
+CommandBuffer c;
 
 
 std::vector<const char *> Boturi::deviceExtensions = {
@@ -134,10 +135,14 @@ void Boturi::init(GameConfiguration config)
 	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
 	mvp.projection[1][1] *= -1;
 
+	c = CommandBuffer(p, m, d);
+
 	// end temp
 
 	while (!glfwWindowShouldClose(window))
 		glfwPollEvents();
+
+	vkDeviceWaitIdle(device);
 }
 
 void Boturi::printError(const char* message)
@@ -174,17 +179,17 @@ void Boturi::removeDynamics()
 	for (auto frameBuffer : frameBuffers)
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
 
-	
+	// Temp code
+
+	c.cleanup();
+	p.cleanup();
+
+	// end temp
 
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
-	// Temp code
-
-	d.cleanup();
-	p.cleanup();
-
-	// end temp
+	
 
 	for (auto imageView : swapChainImageViews)
 		vkDestroyImageView(device, imageView, nullptr);
@@ -215,8 +220,10 @@ void Boturi::exit()
 		vkDestroySampler(device, pair.second, nullptr);
 
 	t.cleanup();
-	m.cleanup();
+	d.cleanup();
+
 	u.cleanup();
+	m.cleanup();
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{

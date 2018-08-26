@@ -157,3 +157,4 @@ void Descriptor::cleanup()
 }
 
 VkDescriptorSetLayout Descriptor::getLayout() { return layout; }
+VkDescriptorSet Descriptor::getDescriptorSet(int index) { return sets[index]; }

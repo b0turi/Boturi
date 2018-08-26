@@ -10,4 +10,7 @@ public:
 	Pipeline(const char * vertexShader, const char * fragmentShader, Descriptor desc);
 
 	void cleanup();
+
+	VkPipeline getPipeline();
+	VkPipelineLayout getLayout();
 };

@@ -50,6 +50,8 @@ Mesh::Mesh(const char * filename)
 {
 	loadModel(filename);
 
+	indexCount = indices.size();
+
 	VkDeviceSize vertListSize = sizeof(vertices[0]) * vertices.size();
 	VkDeviceSize indListSize = sizeof(indices[0]) * indices.size();
 
@@ -67,3 +69,7 @@ void Mesh::cleanup()
 	vertexBuffer.cleanup();
 	indexBuffer.cleanup();
 }
+
+VkBuffer Mesh::getVertexBuffer() { return vertexBuffer.getBuffer(); }
+VkBuffer Mesh::getIndexBuffer() { return indexBuffer.getBuffer(); }
+uint32_t Mesh::getIndexCount() { return indexCount; }

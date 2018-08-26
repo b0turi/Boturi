@@ -21,4 +21,6 @@ public:
 
 	void cleanup();
 	VkDescriptorSetLayout getLayout();
+
+	VkDescriptorSet getDescriptorSet(int index);
 };
