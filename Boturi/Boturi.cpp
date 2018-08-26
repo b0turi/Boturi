@@ -5,7 +5,7 @@ bool Boturi::debugMode;
 bool Boturi::resizedWindow;
 
 const int Boturi::MAX_FRAMES_IN_FLIGHT = 2;
-VkSampler * Boturi::textureSamplers[64];
+std::map<int, VkSampler> Boturi::textureSamplers;
 
 // Constants across the environment
 GLFWwindow * Boturi::window;
@@ -54,8 +54,6 @@ Pipeline p;
 Texture t;
 Mesh m;
 
-
-
 std::vector<const char *> Boturi::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
@@ -82,6 +80,7 @@ void makeGlfwWindow(
 void Boturi::init(GameConfiguration config)
 {
 	glfwInit();
+
 	debugMode = config.debugMode;
 
 	if (makeVulkanInstance(config, instance) != VK_SUCCESS)
@@ -106,6 +105,10 @@ void Boturi::init(GameConfiguration config)
 	// TODO: Descriptor sets
 	t = Texture("textures/texture.jpg");
 	m = Mesh("models/cube.obj");
+
+	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
+	d = Descriptor(def);
+	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
 
 	// end temp
 
@@ -137,12 +140,6 @@ void Boturi::addDynamics()
 		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, VK_IMAGE_ASPECT_DEPTH_BIT);
 
 	makeFrameBuffers(frameBuffers);
-	// Temp code
-	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
-	d = Descriptor(def);
-
-	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
-	// end temp
 }
 
 void Boturi::removeDynamics()
@@ -190,6 +187,9 @@ void Boturi::exit()
 {
 	removeDynamics();
 
+	for (auto& pair : textureSamplers)
+		vkDestroySampler(device, pair.second, nullptr);
+
 	t.cleanup();
 	m.cleanup();
 
@@ -210,4 +210,11 @@ void Boturi::exit()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+VkSampler Boturi::getTextureSampler(int mipLevel)
+{
+	if (textureSamplers.find(mipLevel) == textureSamplers.end())
+		textureSamplers[mipLevel] = Texture::makeTextureSampler(mipLevel);
+	return textureSamplers[mipLevel];
 }

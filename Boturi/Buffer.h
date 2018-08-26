@@ -9,12 +9,15 @@ private:
 	
 public:
 	Buffer();
-	//One constructor will handle normal buffers (vertex, index, uniform)
+	//Creates a buffer passed into with a staging buffer
 	Buffer(VkDeviceSize size, void * info, VkBufferUsageFlags usage);
-	//The other handles staging buffers
+	//Creates a staging buffer
 	Buffer(VkDeviceSize size, void * info);
+	//Creates a uniform buffer
+	Buffer(VkDeviceSize size);
 
 	VkBuffer getBuffer();
+	VkDeviceMemory getMemory();
 
 	void cleanup();
 };

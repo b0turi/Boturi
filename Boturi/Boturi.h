@@ -11,12 +11,14 @@
 #include "Pipeline.h"
 #include "Texture.h"
 #include "Mesh.h"
+#include "UniformBuffer.h"
 #include <iostream>
+#include <map>
 
 class Boturi
 {
 private:
-	static VkSampler * textureSamplers[64];
+	static std::map<int, VkSampler> textureSamplers;
 public:
 	static const int MAX_FRAMES_IN_FLIGHT;
 	static bool resizedWindow;
@@ -73,4 +75,6 @@ public:
 	static size_t currentFrame;
 
 	static std::vector<Descriptor> descriptors;
+
+	static VkSampler getTextureSampler(int mipLevel);
 };

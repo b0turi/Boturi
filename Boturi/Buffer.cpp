@@ -48,6 +48,7 @@ void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size)
 
 Buffer::Buffer() {} 
 
+// Vertex and Index Buffers
 Buffer::Buffer(VkDeviceSize size, void * info, VkBufferUsageFlags usage)
 {
 	Buffer stagingBuffer(size, info);
@@ -56,6 +57,7 @@ Buffer::Buffer(VkDeviceSize size, void * info, VkBufferUsageFlags usage)
 	stagingBuffer.cleanup();
 }
 
+// Staging Buffers
 Buffer::Buffer(VkDeviceSize size, void * info)
 {
 	makeBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
@@ -68,6 +70,14 @@ Buffer::Buffer(VkDeviceSize size, void * info)
 	vkUnmapMemory(Boturi::device, memory);
 }
 
+// Uniform Buffers
+Buffer::Buffer(VkDeviceSize size)
+{
+	makeBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		buffer, memory);
+}
+
 void Buffer::cleanup()
 {
 	vkDestroyBuffer(Boturi::device, buffer, nullptr);
@@ -75,3 +85,4 @@ void Buffer::cleanup()
 }
 
 VkBuffer Buffer::getBuffer() { return buffer; }
+VkDeviceMemory Buffer::getMemory() { return memory; }
