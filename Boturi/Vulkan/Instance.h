@@ -1,18 +1,21 @@
 #pragma once
+std::vector<const char*> getRequiredExtensions(SDL_Window * window, bool debugMode) {
+	uint32_t SDLextensionCount = 0;
+	const char ** names;
+	SDL_Vulkan_GetInstanceExtensions(window, &SDLextensionCount, nullptr);
 
-std::vector<const char*> getRequiredExtensions(bool debugMode) {
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+	names = new const char *[SDLextensionCount];
 
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	SDL_Vulkan_GetInstanceExtensions(window, &SDLextensionCount, names);
+
+	std::vector<const char*> extensions(names, names + SDLextensionCount);
 
 	if (debugMode)
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 	return extensions;
 }
 
-VkResult makeVulkanInstance(GameConfiguration config, VkInstance & instance)
+VkResult makeVulkanInstance(GameConfiguration config, SDL_Window * window, VkInstance & instance)
 {
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -27,7 +30,7 @@ VkResult makeVulkanInstance(GameConfiguration config, VkInstance & instance)
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	auto extensions = getRequiredExtensions(config.debugMode);
+	auto extensions = getRequiredExtensions(window, config.debugMode);
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 

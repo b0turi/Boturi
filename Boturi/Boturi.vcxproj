@@ -18,6 +18,44 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Boturi.h" />
+    <ClInclude Include="GameConfiguration.h" />
+    <ClInclude Include="Vulkan\BindingType.h" />
+    <ClInclude Include="Vulkan\Buffer.h" />
+    <ClInclude Include="Vulkan\CommandBuffer.h" />
+    <ClInclude Include="Vulkan\Descriptor.h" />
+    <ClInclude Include="Vulkan\Device.h" />
+    <ClInclude Include="Vulkan\Image.h" />
+    <ClInclude Include="Vulkan\Instance.h" />
+    <ClInclude Include="Vulkan\MemoryType.h" />
+    <ClInclude Include="Vulkan\Mesh.h" />
+    <ClInclude Include="Vulkan\PhysicalDevice.h" />
+    <ClInclude Include="Vulkan\Pipeline.h" />
+    <ClInclude Include="Vulkan\RenderPass.h" />
+    <ClInclude Include="Vulkan\SwapChain.h" />
+    <ClInclude Include="Vulkan\SwapChainSupportDetails.h" />
+    <ClInclude Include="Vulkan\SyncObjects.h" />
+    <ClInclude Include="Vulkan\Texture.h" />
+    <ClInclude Include="Vulkan\UniformBuffer.h" />
+    <ClInclude Include="Vulkan\Uniforms.h" />
+    <ClInclude Include="Vulkan\Vertex.h" />
+    <ClInclude Include="Vulkan\Vulkan.h" />
+    <ClInclude Include="Vulkan\VulkanDebugger.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Boturi.cpp" />
+    <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="CommandBuffer.cpp" />
+    <ClCompile Include="Descriptor.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="UniformBuffer.cpp" />
+    <ClCompile Include="Vulkan.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{56F8E7F8-9CDE-48A3-9827-76A188272341}</ProjectGuid>
@@ -76,12 +114,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.77.0\Include;C:\Users\Kyle\Documents\Vulkan Game Libraries\tinyobjloader-master;C:\Users\Kyle\Documents\Vulkan Game Libraries\stb_image;C:\Users\Kyle\Documents\Vulkan Game Libraries\glm;C:\Users\Kyle\Documents\Vulkan Game Libraries\glfw-3.2.1.bin.WIN32\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.82.1\Include;C:\Users\Kyle\Documents\Vulkan Game Libraries\glm;C:\Users\Kyle\Documents\Vulkan Game Libraries\SDL2-2.0.8\include;C:\Users\Kyle\Documents\Vulkan Game Libraries\stb_image;C:\Users\Kyle\Documents\Vulkan Game Libraries\tiny_obj_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.77.0\Lib32;C:\Users\Kyle\Documents\Vulkan Game Libraries\glfw-3.2.1.bin.WIN32\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.82.1\Lib32;C:\Users\Kyle\Documents\Vulkan Game Libraries\SDL2-2.0.8\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -95,15 +135,21 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.1.82.1\Include;C:\Users\Kyle\Documents\Vulkan Game Libraries\glm;C:\Users\Kyle\Documents\Vulkan Game Libraries\SDL2-2.0.8\include;C:\Users\Kyle\Documents\Vulkan Game Libraries\stb_image;C:\Users\Kyle\Documents\Vulkan Game Libraries\tiny_obj_loader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.1.82.1\Lib32;C:\Users\Kyle\Documents\Vulkan Game Libraries\SDL2-2.0.8\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,44 +166,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Boturi.cpp" />
-    <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="CommandBuffer.cpp" />
-    <ClCompile Include="Descriptor.cpp" />
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
-    <ClCompile Include="Pipeline.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="UniformBuffer.cpp" />
-    <ClCompile Include="Vulkan.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BindingType.h" />
-    <ClInclude Include="Boturi.h" />
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="CommandBuffer.h" />
-    <ClInclude Include="Descriptor.h" />
-    <ClInclude Include="Device.h" />
-    <ClInclude Include="GameConfiguration.h" />
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="Instance.h" />
-    <ClInclude Include="MemoryType.h" />
-    <ClInclude Include="Mesh.h" />
-    <ClInclude Include="PhysicalDevice.h" />
-    <ClInclude Include="Pipeline.h" />
-    <ClInclude Include="RenderPass.h" />
-    <ClInclude Include="SwapChain.h" />
-    <ClInclude Include="SwapChainSupportDetails.h" />
-    <ClInclude Include="SyncObjects.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="UniformBuffer.h" />
-    <ClInclude Include="Uniforms.h" />
-    <ClInclude Include="Vertex.h" />
-    <ClInclude Include="Vulkan.h" />
-    <ClInclude Include="VulkanDebugger.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

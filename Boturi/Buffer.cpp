@@ -1,5 +1,5 @@
 #include "Boturi.h"
-#include "MemoryType.h"
+#include "Vulkan/MemoryType.h"
 
 VkResult makeBuffer(
 	VkDeviceSize size, 

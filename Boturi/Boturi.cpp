@@ -1,5 +1,5 @@
 #include "Boturi.h"
-#include "Vulkan.h"
+#include "Vulkan/Vulkan.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -11,13 +11,10 @@
 #include <thread>
 
 bool Boturi::debugMode;
-bool Boturi::resizedWindow;
 
 const int Boturi::MAX_FRAMES_IN_FLIGHT = 2;
-std::map<int, VkSampler> Boturi::textureSamplers;
 
-// Constants across the environment
-GLFWwindow * Boturi::window;
+SDL_Window * Boturi::window;
 
 VkInstance Boturi::instance;
 VkDebugReportCallbackEXT Boturi::debugger;
@@ -55,7 +52,7 @@ std::vector<VkSemaphore> Boturi::renderFinishedSemaphores;
 std::vector<VkFence> Boturi::inFlightFences;
 size_t Boturi::currentFrame;
 
-// Dynamically created
+std::map<int, VkSampler> Boturi::textureSamplers;
 
 std::vector<Descriptor> Boturi::descriptors;
 
@@ -75,34 +72,67 @@ std::vector<const char *> Boturi::deviceExtensions = {
 };
 
 std::vector<const char *> Boturi::validationLayers = {
-	"VK_LAYER_LUNARG_standard_validation" 
+	"VK_LAYER_LUNARG_standard_validation"
 };
 
-// Used when creating GLFW window
-static void framebufferResizeCallback(GLFWwindow * window, int width, int height) {
-	Boturi::refresh();
+static void SetSDLIcon(SDL_Window * window)
+{
+#include "textures/icon.c"
+
+	Uint32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	int shift = (my_icon.bytes_per_pixel == 3) ? 8 : 0;
+	rmask = 0xff000000 >> shift;
+	gmask = 0x00ff0000 >> shift;
+	bmask = 0x0000ff00 >> shift;
+	amask = 0x000000ff >> shift;
+#else // little endian, like x86
+	rmask = 0x000000ff;
+	gmask = 0x0000ff00;
+	bmask = 0x00ff0000;
+	amask = (icon.bytes_per_pixel == 3) ? 0 : 0xff000000;
+#endif
+
+	SDL_Surface* newIcon = SDL_CreateRGBSurfaceFrom((void*)icon.pixel_data, icon.width,
+		icon.height, icon.bytes_per_pixel * 8, icon.bytes_per_pixel*icon.width,
+		rmask, gmask, bmask, amask);
+	SDL_SetWindowIcon(window, newIcon);
+
+	SDL_FreeSurface(newIcon);
 }
 
-void makeGlfwWindow(
-	GameConfiguration config, VkSurfaceKHR & surface, GLFWwindow ** window)
+GameConfiguration makeWindow(GameConfiguration config, SDL_Window ** window)
 {
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	 *window = glfwCreateWindow(config.width, config.height, config.title, nullptr, nullptr);
-	glfwSetFramebufferSizeCallback(*window, framebufferResizeCallback);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
-	glfwCreateWindowSurface(Boturi::instance, *window, nullptr, &surface);
+	if(config.fullscreen)
+		*window = SDL_CreateWindow(config.title, 0,0, 
+			config.width, 
+			config.height, 
+			SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_VULKAN);
+	else
+		*window = SDL_CreateWindow(config.title, 
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+			config.width, config.height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
+
+
+	SDL_SetWindowResizable(*window, config.resizable ? SDL_TRUE : SDL_FALSE);
+
+	SetSDLIcon(*window);
+
+	return config;
 }
 
 void Boturi::init(GameConfiguration config)
 {
-	glfwInit();
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
 	debugMode = config.debugMode;
+	config = makeWindow(config, &window);
 
-	if (makeVulkanInstance(config, instance) != VK_SUCCESS)
-		printError("Unable to create vulkan instance");
+	makeVulkanInstance(config, window, instance);
 
-	makeGlfwWindow(config, surface, &window);
+	SDL_Vulkan_CreateSurface(window, instance, &surface);
 
 	if (debugMode)
 		makeVulkanDebugger(debugger);
@@ -157,9 +187,19 @@ void Boturi::init(GameConfiguration config)
 
 	// end temp
 
-	while (!glfwWindowShouldClose(window))
+	bool shouldEnd = false;
+	while (!shouldEnd)
 	{
-		glfwPollEvents();
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT &&
+				event.window.event == SDL_WINDOWEVENT_CLOSE))
+				shouldEnd = true;
+
+			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
+				refresh();
+		}
 		draw();
 	}
 
@@ -200,8 +240,8 @@ void Boturi::refresh()
 {
 	int width = 0, height = 0;
 	while (width == 0 || height == 0) {
-		glfwGetFramebufferSize(window, &width, &height);
-		glfwWaitEvents();
+		SDL_GetWindowSize(window, &width, &height);
+		SDL_WaitEvent(0);
 	}
 
 	vkDeviceWaitIdle(device);
@@ -226,6 +266,8 @@ void Boturi::refresh()
 	makeFrameBuffers(frameBuffers);
 
 	c = CommandBuffer(p, m, d);
+
+	
 }
 
 void Boturi::exit()
@@ -258,8 +300,8 @@ void Boturi::exit()
 
 	vkDestroyInstance(instance, nullptr);
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	SDL_DestroyWindow(window);
+	SDL_Quit();
 }
 
 VkSampler Boturi::getTextureSampler(int mipLevel)
@@ -305,6 +347,8 @@ void Boturi::draw()
 	}
 
 	mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
+	mvp.projection[1][1] *= -1;
 	u.update(&mvp, imageIndex);
 
 	VkSubmitInfo submitInfo = {};
@@ -345,13 +389,10 @@ void Boturi::draw()
 
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || resizedWindow) {
-		resizedWindow = false;
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 		refresh();
-	}
-	else if (result != VK_SUCCESS) {
-		throw std::runtime_error("failed to present swap chain image!");
-	}
+	else if (result != VK_SUCCESS) 
+		Boturi::printError("failed to present swap chain image!");
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 

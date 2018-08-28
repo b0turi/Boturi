@@ -102,13 +102,13 @@ VkResult Descriptor::makeDescriptorSets(
 	if (vkAllocateDescriptorSets(Boturi::device, &allocInfo, &sets[0]) != VK_SUCCESS)
 		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 
-	for (int i = 0; i < Boturi::numImages; i++) 
+	for (uint32_t i = 0; i < Boturi::numImages; i++) 
 	{
 		int uPtr = 0;
 		int tPtr = 0;
 		std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-		for (int j = 0; j < definition.size(); j++)
+		for (size_t j = 0; j < definition.size(); j++)
 		{
 			VkWriteDescriptorSet descriptorSet = {};
 

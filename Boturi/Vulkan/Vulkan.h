@@ -1,7 +1,8 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include "GLFW/glfw3.h"
+#include <SDL.h>
+#include <SDL_vulkan.h>
+#include <vulkan/vulkan.h>
 
 #include "SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
@@ -10,7 +11,7 @@
 #include <set>
 #include <string>
 
-VkResult makeVulkanInstance(GameConfiguration config, VkInstance & instance);
+VkResult makeVulkanInstance(GameConfiguration config, SDL_Window * window, VkInstance & instance);
 
 VkResult makeVulkanDebugger(VkDebugUtilsMessengerEXT & debugger);
 void destroyVulkanDebugger(VkDebugUtilsMessengerEXT debugger);

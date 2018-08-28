@@ -13,21 +13,83 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Vulkan">
-      <UniqueIdentifier>{cb7613f0-8a77-4196-8111-9529e78ab773}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="Vulkan\BindingType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Buffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\CommandBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Descriptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Device.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Instance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\MemoryType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\PhysicalDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Pipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\RenderPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\SwapChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\SwapChainSupportDetails.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\SyncObjects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\UniformBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Uniforms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Boturi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameConfiguration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\VulkanDebugger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="Boturi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Vulkan.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Image.cpp">
+    <ClCompile Include="Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CommandBuffer.cpp">
@@ -36,91 +98,26 @@
     <ClCompile Include="Descriptor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Pipeline.cpp">
+    <ClCompile Include="Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Boturi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameConfiguration.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vulkan.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanDebugger.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysicalDevice.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="SwapChainSupportDetails.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Device.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Instance.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="SwapChain.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Image.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderPass.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptor.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryType.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="BindingType.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Pipeline.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="SyncObjects.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Buffer.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="UniformBuffer.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="Uniforms.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandBuffer.h">
-      <Filter>Header Files\Vulkan</Filter>
-    </ClInclude>
+    <ClCompile Include="Vulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

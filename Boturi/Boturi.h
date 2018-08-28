@@ -1,40 +1,58 @@
 #pragma once
 
-#include "BindingType.h"
-#include "Vertex.h"
-#include "SwapChainSupportDetails.h"
+#include "Vulkan/BindingType.h"
+#include "Vulkan/Vertex.h"
+#include "Vulkan/SwapChainSupportDetails.h"
 #include "GameConfiguration.h"
-#include "Uniforms.h"
-#include "Image.h"
-#include "Buffer.h"
-#include "UniformBuffer.h"
-#include "Texture.h"
-#include "Descriptor.h"
-#include "Pipeline.h"
-#include "Mesh.h"
-#include "CommandBuffer.h"
+#include "Vulkan/Uniforms.h"
+#include "Vulkan/Image.h"
+#include "Vulkan/Buffer.h"
+#include "Vulkan/UniformBuffer.h"
+#include "Vulkan/Texture.h"
+#include "Vulkan/Descriptor.h"
+#include "Vulkan/Pipeline.h"
+#include "Vulkan/Mesh.h"
+#include "Vulkan/CommandBuffer.h"
 #include <iostream>
 #include <map>
 
+// The Boturi Game Engine is implemented with a static class acting as the "environment" 
+// from which all classes can pull information that is constant across the program,
+// like the Vulkan instance or the Vulkan device. 
+//    
+// All Vulkan specific attributes are included in the Vulkan namespace so that when calling
+// Boturi as an end user, the option to alter the Vulkan environment is not available
+// to increase code completion readability and prevent user error.
 class Boturi
 {
 private:
 	static std::map<int, VkSampler> textureSamplers;
-public:
-	static const int MAX_FRAMES_IN_FLIGHT;
-	static bool resizedWindow;
+	static std::vector<Descriptor> descriptors;
 
-	static VkSampleCountFlagBits msaaSamples;
-
-	static void init(GameConfiguration config);
-	static void exit();
-
-	static void addDynamics();
+	static size_t currentFrame;
+	
 	static void removeDynamics();
 	static void refresh();
+	static void draw();
+public:
+	static bool debugMode;
 
-	static GLFWwindow * window;
-	static void printError(const char* message);
+	static SDL_Window * window;
+	static float aspectRatio;
+
+	static VkFormat depthFormat;
+	static const int MAX_FRAMES_IN_FLIGHT;
+	static uint32_t numImages;
+	static VkSampleCountFlagBits msaaSamples;
+
+	static std::vector<const char *> validationLayers;
+	static std::vector<const char *> deviceExtensions;
+
+	static VkInstance instance;
+	static VkDebugUtilsMessengerEXT debugger;
+	static VkSurfaceKHR surface;
+	static VkPhysicalDevice physicalDevice;
+	static VkDevice device;
 
 	static int graphicsQueueIndex;
 	static int presentQueueIndex;
@@ -42,45 +60,33 @@ public:
 	static VkQueue graphicsQueue;
 	static VkQueue presentQueue;
 
-	static uint32_t numImages;
-
-	static VkFormat depthFormat;
-
 	static SwapChainSupportDetails swapChainDetails;
+	static VkSwapchainKHR swapChain;
+	static VkRenderPass renderPass;
+
+	static std::vector<VkImage> swapChainImages;
+	static std::vector<VkImageView> swapChainImageViews;
+	static std::vector<VkFramebuffer> frameBuffers;
+
 	static VkFormat imageFormat;
 	static VkExtent2D extent;
 
 	static Image colorAttachment;
 	static Image depthAttachment;
 
-	static VkInstance instance;
-	static VkDebugUtilsMessengerEXT debugger;
-	static VkSurfaceKHR surface;
-	static VkPhysicalDevice physicalDevice;
-	static VkDevice device;
-	static VkSwapchainKHR swapChain;
-	static VkRenderPass renderPass;
 	static VkCommandPool commandPool;
-
-	static std::vector<VkImage> swapChainImages;
-	static std::vector<VkImageView> swapChainImageViews;
-	static std::vector<VkFramebuffer> frameBuffers;
-
-	static std::vector<const char *> validationLayers;
-	static std::vector<const char *> deviceExtensions;
-	static bool debugMode;
 
 	static std::vector<VkSemaphore> imageAvailableSemaphores;
 	static std::vector<VkSemaphore> renderFinishedSemaphores;
 	static std::vector<VkFence> inFlightFences;
-	static size_t currentFrame;
 
-	static std::vector<Descriptor> descriptors;
-
-	static VkSampler getTextureSampler(int mipLevel);
 	static size_t getUniformSize(UniformType type);
+	static VkSampler getTextureSampler(int mipLevel);
 
-	static float aspectRatio;
 
-	static void draw();
+	static void init(GameConfiguration config);
+	static void run();
+	static void exit();
+
+	static void printError(const char* message);
 };

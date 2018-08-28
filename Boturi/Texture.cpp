@@ -137,6 +137,12 @@ void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int3
 	CommandBuffer::endCommand(commandBuffer);
 }
 
+unsigned char * Texture::loadImage(const char * filename, int * width, int * height)
+{
+	int channels = 0;
+	return stbi_load(filename, &*width, &*height, &channels, STBI_rgb_alpha);
+}
+
 Texture::Texture() {}
 Texture::Texture(const char * filename) : Image()
 {

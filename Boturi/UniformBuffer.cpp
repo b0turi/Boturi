@@ -8,7 +8,7 @@ UniformBuffer::UniformBuffer(UniformType type)
 	VkDeviceSize bufferSize = Boturi::getUniformSize(type);
 	buffers.resize(Boturi::numImages);
 
-	for (int i = 0; i < Boturi::numImages; i++)
+	for (uint32_t i = 0; i < Boturi::numImages; i++)
 		buffers[i] = Buffer(bufferSize);
 }
 

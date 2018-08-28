@@ -40,7 +40,7 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	else 
 	{
 		int width, height;
-		glfwGetFramebufferSize(Boturi::window, &width, &height);
+		SDL_GetWindowSize(Boturi::window, &width, &height);
 
 		std::cout << width << ", " << height << std::endl;
 
@@ -104,7 +104,7 @@ VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkForma
 	numImages = imageCount;
 	imageFormat = surfaceFormat.format;
 	extent = ext;
-	Boturi::aspectRatio = 2;
+	Boturi::aspectRatio = ext.width/(float)ext.height;
 
 	return vkCreateSwapchainKHR(Boturi::device, &createInfo, nullptr, &swapChain);
 }
