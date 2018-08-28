@@ -7,7 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-
+// Stores data that will be passed to the vertex shader
+// Functions for the binding and attribute descriptions
+// can be found in the source for the Pipeline class
 struct Vertex {
 	glm::vec3 pos;
 	glm::vec3 color;
@@ -21,6 +23,7 @@ struct Vertex {
 
 namespace std 
 {
+	// A hash function for the Vertex struct so equality can be calculated
 	template<> struct hash<Vertex> 
 	{
 		size_t operator()(Vertex const& vertex) const 

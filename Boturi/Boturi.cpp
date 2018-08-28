@@ -58,6 +58,8 @@ std::vector<Descriptor> Boturi::descriptors;
 
 float Boturi::aspectRatio;
 
+int Boturi::fpsCap;
+
 Descriptor d;
 Pipeline p;
 Texture t;
@@ -66,6 +68,7 @@ UniformBuffer u;
 MVPMatrix mvp;
 CommandBuffer c;
 
+VkPresentModeKHR presentMode;
 
 std::vector<const char *> Boturi::deviceExtensions = {
 	VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -105,39 +108,81 @@ GameConfiguration makeWindow(GameConfiguration config, SDL_Window ** window)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
-	if(config.fullscreen)
-		*window = SDL_CreateWindow(config.title, 0,0, 
-			config.width, 
-			config.height, 
+	if (config.fullscreen)
+	{
+		*window = SDL_CreateWindow(config.title, 0, 0,
+			config.width,
+			config.height,
 			SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_VULKAN);
-	else
-		*window = SDL_CreateWindow(config.title, 
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-			config.width, config.height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
 
+		// Do not allow a fullscreen window to be resizable, results in SDL error
+		config.resizable = false;
+	}
+	else
+	{
+		*window = SDL_CreateWindow(config.title,
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			config.width, config.height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
+	}
 
 	SDL_SetWindowResizable(*window, config.resizable ? SDL_TRUE : SDL_FALSE);
 
 	SetSDLIcon(*window);
 
+	// Return the new config so any changes that occurred can be reflected
 	return config;
+}
+
+void log(const char * message, bool blockingCall = false)
+{
+	std::cout << "BOTURI INFO: " << message << std::endl;
+	if (blockingCall)
+		std::getchar();
 }
 
 void Boturi::init(GameConfiguration config)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
+	// Set up environment using config settings
+	
+
 	debugMode = config.debugMode;
 	config = makeWindow(config, &window);
 
-	makeVulkanInstance(config, window, instance);
+	makeVulkanInstance(config, window, &instance);
 
 	SDL_Vulkan_CreateSurface(window, instance, &surface);
 
 	if (debugMode)
 		makeVulkanDebugger(debugger);
 
-	selectPhysicalDevice(physicalDevice, &graphicsQueueIndex, &presentQueueIndex, &swapChainDetails);
+	selectPhysicalDevice(physicalDevice);
+
+	std::vector<VkSampleCountFlagBits> sampleCounts = GameConfiguration::getSampleCounts(physicalDevice);
+	VkSampleCountFlagBits maxCount = sampleCounts[sampleCounts.size() - 1];
+	if (config.msaaSamples > maxCount)
+	{
+		config.msaaSamples = maxCount;
+		if (config.debugMode)
+			log("Provided MSAA Sample Count was too high, updated to max value");
+	}
+
+	msaaSamples = config.msaaSamples;
+
+	if (config.fpsCap > 500)
+	{
+		config.fpsCap = 500;
+		if(config.debugMode)
+			log("Max FPS Cap exceeded, clamped to 500 FPS");
+	}
+	fpsCap = config.fpsCap;
+
+	if (config.vSync)
+		presentMode = VK_PRESENT_MODE_FIFO_KHR;
+	else
+		presentMode = chooseSwapPresentMode(swapChainDetails.presentModes);
+
 	makeVulkanDevice(device);
 
 	CommandBuffer::makeCommandPool(commandPool);
@@ -145,7 +190,7 @@ void Boturi::init(GameConfiguration config)
 	vkGetDeviceQueue(device, graphicsQueueIndex, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, presentQueueIndex, 0, &presentQueue);
 
-	makeSwapChain(swapChain, numImages, imageFormat, extent);
+	makeSwapChain(swapChain, numImages, imageFormat, extent, presentMode);
 	fillSwapChain();
 
 	makeRenderPass(renderPass);
@@ -248,7 +293,7 @@ void Boturi::refresh()
 
 	removeDynamics();
 
-	makeSwapChain(swapChain, numImages, imageFormat, extent);
+	makeSwapChain(swapChain, numImages, imageFormat, extent, presentMode);
 	fillSwapChain();
 
 	makeRenderPass(renderPass);
@@ -332,7 +377,6 @@ void Boturi::draw()
 	auto currentTime = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-	auto start = std::chrono::system_clock::now();
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
 	uint32_t imageIndex;
@@ -396,12 +440,8 @@ void Boturi::draw()
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	auto end = std::chrono::system_clock::now();
-
-	double fps = 600;
-
-	std::chrono::duration<double> diff = end - start;
-	if (diff.count() < double(1000 / fps)) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(int(double(1000 / fps) - diff.count())));
-	}
+	auto endTime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> diff = endTime - currentTime;
+	if(diff.count() < double(1000/(double)fpsCap))
+		std::this_thread::sleep_for(std::chrono::milliseconds(int(double(1000 / (double)fpsCap) - diff.count())));
 }

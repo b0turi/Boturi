@@ -59,11 +59,10 @@ VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	}
 }
 
-VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkFormat & imageFormat, VkExtent2D & extent)
+VkResult makeSwapChain(VkSwapchainKHR & swapChain, uint32_t & numImages, VkFormat & imageFormat, VkExtent2D & extent, VkPresentModeKHR presentMode)
 {
-	Boturi::swapChainDetails = getSwapChainSupport(Boturi::physicalDevice);
+	Boturi::swapChainDetails = PhysicalDevice::getSwapChainSupport(Boturi::physicalDevice);
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(Boturi::swapChainDetails.formats);
-	VkPresentModeKHR presentMode = chooseSwapPresentMode(Boturi::swapChainDetails.presentModes);
 	VkExtent2D ext = chooseSwapExtent(Boturi::swapChainDetails.capabilities);
 
 	uint32_t imageCount = Boturi::swapChainDetails.capabilities.minImageCount + 1;

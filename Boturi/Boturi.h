@@ -31,6 +31,7 @@ private:
 
 	static size_t currentFrame;
 	
+	static int fpsCap;
 	static void removeDynamics();
 	static void refresh();
 	static void draw();
