@@ -36,13 +36,12 @@ std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
 	return attributeDescriptions;
 }
 
-VkResult makePipelineLayout(Descriptor desc, VkPipelineLayout & layout)
+VkResult makePipelineLayout(VkDescriptorSetLayout dLayout, VkPipelineLayout & layout)
 {
-	VkDescriptorSetLayout descLayout = desc.getLayout();
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &descLayout;
+	pipelineLayoutInfo.pSetLayouts = &dLayout;
 
 	return vkCreatePipelineLayout(Boturi::device, &pipelineLayoutInfo, nullptr, &layout);
 }
@@ -78,10 +77,10 @@ static std::vector<char> readFile(const std::string& filename) {
 	return buffer;
 }
 
-VkResult makePipeline(const char * vertexShader, const char * fragmentShader, VkPipelineLayout layout, VkPipeline & pipeline)
+VkResult makePipeline(Shader * shader, VkPipelineLayout layout, VkPipeline & pipeline)
 {
-	auto vertShaderCode = readFile(vertexShader);
-	auto fragShaderCode = readFile(fragmentShader);
+	auto vertShaderCode = readFile(shader->getFilenames()[0].c_str());
+	auto fragShaderCode = readFile(shader->getFilenames()[1].c_str());
 
 	VkShaderModule vertShaderModule = getShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = getShaderModule(fragShaderCode);
@@ -197,10 +196,11 @@ VkResult makePipeline(const char * vertexShader, const char * fragmentShader, Vk
 	return result;
 }
 
-Pipeline::Pipeline(const char * vertexShader, const char * fragmentShader, Descriptor desc)
+Pipeline::Pipeline(Shader shader, VkDescriptorSetLayout dLayout)
 {
-	makePipelineLayout(desc, layout);
-	makePipeline(vertexShader, fragmentShader, layout, pipeline);
+	makePipelineLayout(dLayout, layout);
+	makePipeline(&shader, layout, pipeline);
+	Pipeline::shader = shader;
 }
 
 void Pipeline::cleanup()

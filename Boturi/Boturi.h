@@ -10,8 +10,10 @@
 #include "Vulkan/UniformBuffer.h"
 #include "Vulkan/Texture.h"
 #include "Vulkan/Descriptor.h"
+#include "Vulkan/Shader.h"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/Mesh.h"
+#include "GameObject.h"
 #include "Vulkan/CommandBuffer.h"
 #include <iostream>
 #include <map>
@@ -26,16 +28,24 @@
 class Boturi
 {
 private:
-	static std::map<int, VkSampler> textureSamplers;
-	static std::vector<Descriptor> descriptors;
-
 	static size_t currentFrame;
 	
 	static int fpsCap;
 	static void removeDynamics();
 	static void refresh();
 	static void draw();
+
+	static std::vector<GameObject> objects;
+	static CommandBuffer cmd;
 public:
+
+	static std::vector<Shader> shaders;
+	static std::map<int, VkSampler> textureSamplers;
+	static std::map<std::vector<BindingType>, VkDescriptorSetLayout> descriptors;
+	static std::map<std::string, Pipeline> pipelines;
+	static std::map<std::string, Mesh> meshes;
+	static std::map<std::string, Texture> textures;
+
 	static bool debugMode;
 
 	static SDL_Window * window;
@@ -88,6 +98,11 @@ public:
 	static void init(GameConfiguration config);
 	static void run();
 	static void exit();
+
+	static void makeDescriptors();
+	static void makePipelines();
+	static void addGameObject(GameObject obj);
+	static void destroyPipelines();
 
 	static void printError(const char* message);
 };

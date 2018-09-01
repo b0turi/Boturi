@@ -44,8 +44,10 @@ void CommandBuffer::endCommand(VkCommandBuffer commandBuffer)
 }
 
 CommandBuffer::CommandBuffer() {}
-CommandBuffer::CommandBuffer(Pipeline pipeline, Mesh mesh, Descriptor descriptor)
+CommandBuffer::CommandBuffer(std::vector<GameObject> objects)
 {
+	objCount = objects.size();
+	commandBuffers.clear();
 	commandBuffers.resize(Boturi::numImages);
 
 	VkCommandBufferAllocateInfo allocInfo = {};
@@ -82,18 +84,21 @@ CommandBuffer::CommandBuffer(Pipeline pipeline, Mesh mesh, Descriptor descriptor
 
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
+		for (auto obj : objects)
+		{
+			vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, obj.getPipeline().getPipeline());
 
-		VkBuffer vertexBuffers[] = { mesh.getVertexBuffer() };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+			VkBuffer vertexBuffers[] = { obj.getMesh().getVertexBuffer() };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(commandBuffers[i], mesh.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(commandBuffers[i], obj.getMesh().getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-		VkDescriptorSet set = descriptor.getDescriptorSet(i);
-		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getLayout(), 0, 1, &set, 0, nullptr);
+			VkDescriptorSet set = obj.getDescriptor().getSet(i);
+			vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, obj.getPipeline().getLayout(), 0, 1, &set, 0, nullptr);
 
-		vkCmdDrawIndexed(commandBuffers[i], mesh.getIndexCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffers[i], obj.getMesh().getIndexCount(), 1, 0, 0, 0);
+		}
 
 		vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -106,6 +111,7 @@ void CommandBuffer::cleanup()
 {
 	vkFreeCommandBuffers(Boturi::device, Boturi::commandPool, 
 			static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	commandBuffers.clear();
 }
 
 VkCommandBuffer CommandBuffer::getCommandBuffer(uint32_t index) { return commandBuffers[index]; }

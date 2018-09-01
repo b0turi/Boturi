@@ -1,7 +1,7 @@
 #include "Boturi.h"
 Descriptor::Descriptor() {}
 
-VkResult Descriptor::makeDescriptorSetLayout(std::vector<BindingType> definition)
+VkDescriptorSetLayout Descriptor::makeDescriptorSetLayout(std::vector<BindingType> definition)
 {
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
@@ -32,7 +32,9 @@ VkResult Descriptor::makeDescriptorSetLayout(std::vector<BindingType> definition
 	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 	layoutInfo.pBindings = bindings.data();
 
-	return vkCreateDescriptorSetLayout(Boturi::device, &layoutInfo, nullptr, &layout);
+	VkDescriptorSetLayout layout;
+	vkCreateDescriptorSetLayout(Boturi::device, &layoutInfo, nullptr, &layout);
+	return layout;
 }
 
 VkResult Descriptor::makeDescriptorPool(std::vector<BindingType> definition)
@@ -91,7 +93,9 @@ VkResult Descriptor::makeDescriptorSets(
 	std::vector<UniformBuffer> uniforms, 
 	std::vector<Texture> textures)
 {
-	std::vector<VkDescriptorSetLayout> layouts(Boturi::numImages, layout);
+	VkDescriptorSetLayout desc = Boturi::descriptors[definition];
+
+	std::vector<VkDescriptorSetLayout> layouts(Boturi::numImages, desc);
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = pool;
@@ -100,7 +104,7 @@ VkResult Descriptor::makeDescriptorSets(
 
 	sets.resize(Boturi::numImages);
 	if (vkAllocateDescriptorSets(Boturi::device, &allocInfo, &sets[0]) != VK_SUCCESS)
-		return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+		Boturi::printError("Unable to allocate space for descriptor sets");
 
 	for (uint32_t i = 0; i < Boturi::numImages; i++) 
 	{
@@ -131,7 +135,6 @@ VkResult Descriptor::makeDescriptorSets(
 				tPtr++;
 				break;
 			}
-
 			descriptorWrites.push_back(descriptorSet);
 		}
 
@@ -142,17 +145,18 @@ VkResult Descriptor::makeDescriptorSets(
 	return VK_SUCCESS;
 }
 
-Descriptor::Descriptor(std::vector<BindingType> definition) 
+Descriptor::Descriptor(std::vector<BindingType> definition, std::vector<UniformBuffer> uniforms, std::vector<Texture> textures) 
 {
-	makeDescriptorSetLayout(definition);
 	makeDescriptorPool(definition);
+	makeDescriptorSets(definition, uniforms, textures);
+	Descriptor::definition = definition;
 }
 
 void Descriptor::cleanup()
 {
 	vkDestroyDescriptorPool(Boturi::device, pool, nullptr);
-	vkDestroyDescriptorSetLayout(Boturi::device, layout, nullptr);
 }
 
-VkDescriptorSetLayout Descriptor::getLayout() { return layout; }
-VkDescriptorSet Descriptor::getDescriptorSet(int index) { return sets[index]; }
+std::vector<BindingType> Descriptor::getDefinition() { return definition; }
+VkDescriptorPool Descriptor::getPool() { return pool; }
+VkDescriptorSet Descriptor::getSet(int index) { return sets[index]; }

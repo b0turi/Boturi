@@ -52,21 +52,19 @@ std::vector<VkSemaphore> Boturi::renderFinishedSemaphores;
 std::vector<VkFence> Boturi::inFlightFences;
 size_t Boturi::currentFrame;
 
+std::vector<Shader> Boturi::shaders;
 std::map<int, VkSampler> Boturi::textureSamplers;
-
-std::vector<Descriptor> Boturi::descriptors;
+std::map<std::vector<BindingType>, VkDescriptorSetLayout> Boturi::descriptors;
+std::map<std::string, Pipeline> Boturi::pipelines;
+std::map<std::string, Mesh> Boturi::meshes;
+std::map<std::string, Texture> Boturi::textures;
 
 float Boturi::aspectRatio;
 
-int Boturi::fpsCap;
+std::vector<GameObject> Boturi::objects;
+CommandBuffer Boturi::cmd;
 
-Descriptor d;
-Pipeline p;
-Texture t;
-Mesh m;
-UniformBuffer u;
-MVPMatrix mvp;
-CommandBuffer c;
+int Boturi::fpsCap;
 
 VkPresentModeKHR presentMode;
 
@@ -106,21 +104,53 @@ static void SetSDLIcon(SDL_Window * window)
 
 GameConfiguration makeWindow(GameConfiguration config, SDL_Window ** window)
 {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-
 	if (config.fullscreen)
 	{
-		*window = SDL_CreateWindow(config.title, 0, 0,
-			config.width,
-			config.height,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_VULKAN);
-
 		// Do not allow a fullscreen window to be resizable, results in SDL error
 		config.resizable = false;
+
+		// Constrain the fullscreen window to the closest video mode
+		SDL_DisplayMode approxMode;
+		approxMode.w = config.width;
+		approxMode.h = config.height;
+		approxMode.refresh_rate = config.refreshRate;
+
+		if (approxMode.w > GameConfiguration::maxWidth(config.displayIndex) ||
+			approxMode.h > GameConfiguration::maxHeight(config.displayIndex))
+		{
+			approxMode.w = GameConfiguration::maxWidth(config.displayIndex);
+			approxMode.h = GameConfiguration::maxHeight(config.displayIndex);
+		}
+
+		SDL_DisplayMode chosenMode = {};
+
+		SDL_GetClosestDisplayMode(config.displayIndex, &approxMode, &chosenMode);
+		if (approxMode.w != chosenMode.w ||
+			approxMode.h != chosenMode.h ||
+			approxMode.refresh_rate != chosenMode.refresh_rate)
+		{
+			std::cout << "The given video mode was not available on the desired display." << std::endl;
+			std::cout << "New video mode: " << chosenMode.w << ", " << chosenMode.h << 
+				" @" << chosenMode.refresh_rate << std::endl;
+		}
+		
+		// Use the chosen video mode to decide the bounds in the 
+		// screen space where the window should go
+		SDL_Rect bounds;
+		SDL_GetDisplayBounds(config.displayIndex, &bounds);
+		SDL_SetWindowDisplayMode(*window, &chosenMode);
+
+		*window = SDL_CreateWindow(
+			config.title.c_str(),
+			bounds.x,
+			bounds.y, 
+			chosenMode.w, 
+			chosenMode.h, 
+			SDL_WINDOW_VULKAN | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN);
 	}
 	else
 	{
-		*window = SDL_CreateWindow(config.title,
+		*window = SDL_CreateWindow(config.title.c_str(),
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			config.width, config.height, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
 	}
@@ -131,6 +161,27 @@ GameConfiguration makeWindow(GameConfiguration config, SDL_Window ** window)
 
 	// Return the new config so any changes that occurred can be reflected
 	return config;
+}
+
+void Boturi::makeDescriptors()
+{
+	for (Shader shader : shaders)
+		if (descriptors.find(shader.getDefinition()) == descriptors.end())
+			descriptors[shader.getDefinition()] = Descriptor::makeDescriptorSetLayout(shader.getDefinition());
+}
+
+void Boturi::makePipelines()
+{
+	for (Shader shader : shaders)
+		pipelines[shader.getName()] = Pipeline(shader, descriptors[shader.getDefinition()]);
+}
+
+void Boturi::destroyPipelines()
+{
+	for (auto& pair : pipelines)
+		pair.second.cleanup();
+	
+	pipelines.clear();
 }
 
 void log(const char * message, bool blockingCall = false)
@@ -144,9 +195,6 @@ void Boturi::init(GameConfiguration config)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
-	// Set up environment using config settings
-	
-
 	debugMode = config.debugMode;
 	config = makeWindow(config, &window);
 
@@ -159,6 +207,7 @@ void Boturi::init(GameConfiguration config)
 
 	selectPhysicalDevice(physicalDevice);
 
+	// Ensure the user provided data is adequate and adjust values if necessary
 	std::vector<VkSampleCountFlagBits> sampleCounts = GameConfiguration::getSampleCounts(physicalDevice);
 	VkSampleCountFlagBits maxCount = sampleCounts[sampleCounts.size() - 1];
 	if (config.msaaSamples > maxCount)
@@ -207,31 +256,21 @@ void Boturi::init(GameConfiguration config)
 
 	makeSyncObjects(imageAvailableSemaphores, renderFinishedSemaphores, inFlightFences);
 
-	// TEMP
+	config.writeToFile("config");
 
-	t = Texture("textures/asdf.jpg");
-	m = Mesh("models/cube.obj");
-	u = UniformBuffer(MVP_MATRIX);
+	shaders.push_back(Shader({ "default-v.vert", "default-f.frag" },
+		{ UNIFORM_BUFFER, TEXTURE_SAMPLER },
+		{ MVP_MATRIX },
+		true));
 
-	std::vector<BindingType> def = { UNIFORM_BUFFER, TEXTURE_SAMPLER };
-	d = Descriptor(def);
+	makeDescriptors();
+	makePipelines();
 
-	std::vector<UniformBuffer> us = { u };
-	std::vector<Texture> ts = { t };
+	cmd = CommandBuffer(objects);
+}
 
-	d.makeDescriptorSets(def, us, ts);
-	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
-	c = CommandBuffer(p, m, d);
-
-	mvp = {};
-	mvp.model = glm::mat4(1.0f);
-	mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-	mvp.projection[1][1] *= -1;
-
-
-	// end temp
-
+void Boturi::run()
+{
 	bool shouldEnd = false;
 	while (!shouldEnd)
 	{
@@ -244,6 +283,9 @@ void Boturi::init(GameConfiguration config)
 
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
 				refresh();
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+				shouldEnd = true;
 		}
 		draw();
 	}
@@ -260,18 +302,19 @@ void Boturi::printError(const char* message)
 
 void Boturi::removeDynamics()
 {
+	cmd.cleanup();
+
+	for (auto& pair : pipelines)
+	{
+		vkDestroyPipeline(device, pair.second.getPipeline(), nullptr);
+		vkDestroyPipelineLayout(device, pair.second.getLayout(), nullptr);
+	}
+
 	depthAttachment.cleanup();
 	colorAttachment.cleanup();
 
 	for (auto frameBuffer : frameBuffers)
 		vkDestroyFramebuffer(device, frameBuffer, nullptr);
-
-	// Temp code
-
-	c.cleanup();
-	p.cleanup();
-
-	// end temp
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
@@ -298,7 +341,7 @@ void Boturi::refresh()
 
 	makeRenderPass(renderPass);
 
-	p = Pipeline("shaders/vert.spv", "shaders/frag.spv", d);
+	makePipelines();
 
 	colorAttachment = Image(extent, imageFormat, 1, Boturi::msaaSamples,
 		VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -310,23 +353,27 @@ void Boturi::refresh()
 
 	makeFrameBuffers(frameBuffers);
 
-	c = CommandBuffer(p, m, d);
-
-	
+	cmd = CommandBuffer(objects);
 }
 
 void Boturi::exit()
 {
+	for (auto obj : objects)
+		obj.cleanup();
+
+	for (auto& pair : meshes)
+		pair.second.cleanup();
+
+	for (auto& pair : textures)
+		pair.second.cleanup();
+
 	removeDynamics();
 
 	for (auto& pair : textureSamplers)
 		vkDestroySampler(device, pair.second, nullptr);
 
-	t.cleanup();
-	d.cleanup();
-
-	u.cleanup();
-	m.cleanup();
+	for (auto& pair : descriptors)
+		vkDestroyDescriptorSetLayout(device, pair.second, nullptr);
 
 	for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -390,10 +437,8 @@ void Boturi::draw()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	mvp.projection = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 10.0f);
-	mvp.projection[1][1] *= -1;
-	u.update(&mvp, imageIndex);
+	for (auto obj : objects)
+		obj.update(imageIndex);
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -405,9 +450,8 @@ void Boturi::draw()
 	submitInfo.pWaitDstStageMask = waitStages;
 
 	submitInfo.commandBufferCount = 1;
-
-	VkCommandBuffer cmdBuffer = c.getCommandBuffer(imageIndex);
-	submitInfo.pCommandBuffers = &cmdBuffer;
+	VkCommandBuffer buffer = cmd.getCommandBuffer(imageIndex);
+	submitInfo.pCommandBuffers = &buffer;
 
 	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
 	submitInfo.signalSemaphoreCount = 1;
@@ -444,4 +488,12 @@ void Boturi::draw()
 	std::chrono::duration<double> diff = endTime - currentTime;
 	if(diff.count() < double(1000/(double)fpsCap))
 		std::this_thread::sleep_for(std::chrono::milliseconds(int(double(1000 / (double)fpsCap) - diff.count())));
+}
+
+void Boturi::addGameObject(GameObject obj)
+{
+	objects.push_back(obj);
+	cmd.cleanup();
+
+	cmd = CommandBuffer(objects);
 }

@@ -2,22 +2,18 @@
 
 int main(int argc, char* argv[])
 {
-	GameConfiguration g = {};
-	g.debugMode = false;
-
-	g.title = "New Game";
-	g.setVersion(2);
-
-	g.fullscreen = false;
-	g.resizable = true;
-
-	g.msaaSamples = VK_SAMPLE_COUNT_8_BIT;
-
-	g.fpsCap = 200;
-	g.vSync = false;
+	GameConfiguration g = GameConfiguration::loadFromFile("config");
 
 	Boturi::init(g);
 
+	Boturi::meshes["Cube"] = Mesh("models/cube.obj");
+	Boturi::textures["Cage"] = Texture("textures/asdf.jpg");
+
+	Boturi::addGameObject(GameObject("Cube", "Cage", "default"));
+
+	Boturi::run();
+
 	Boturi::exit();
+	std::getchar();
 	return 0;
 }

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="Boturi.h" />
     <ClInclude Include="GameConfiguration.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="Vulkan\BindingType.h" />
     <ClInclude Include="Vulkan\Buffer.h" />
     <ClInclude Include="Vulkan\CommandBuffer.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="Vulkan\PhysicalDevice.h" />
     <ClInclude Include="Vulkan\Pipeline.h" />
     <ClInclude Include="Vulkan\RenderPass.h" />
+    <ClInclude Include="Vulkan\Shader.h" />
     <ClInclude Include="Vulkan\SwapChain.h" />
     <ClInclude Include="Vulkan\SwapChainSupportDetails.h" />
     <ClInclude Include="Vulkan\SyncObjects.h" />
@@ -48,10 +50,12 @@
     <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Descriptor.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
     <ClCompile Include="Vulkan.cpp" />

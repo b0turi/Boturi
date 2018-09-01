@@ -29,7 +29,7 @@ VkResult makeVulkanInstance(GameConfiguration config, SDL_Window * window, VkIns
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
 	// Use config file information to retrieve the name of the window and the version of the software
-	appInfo.pApplicationName = config.title;
+	appInfo.pApplicationName = config.title.c_str();
 	appInfo.applicationVersion = config.getVersion();
 
 	appInfo.pEngineName = "Boturi Game Engine";
