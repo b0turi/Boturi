@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Boturi.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GameConfiguration.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Vulkan\BindingType.h" />
@@ -48,6 +49,7 @@
   <ItemGroup>
     <ClCompile Include="Boturi.cpp" />
     <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CommandBuffer.cpp" />
     <ClCompile Include="Descriptor.cpp" />
     <ClCompile Include="GameObject.cpp" />

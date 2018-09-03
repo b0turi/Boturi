@@ -64,6 +64,8 @@ float Boturi::aspectRatio;
 std::vector<GameObject> Boturi::objects;
 CommandBuffer Boturi::cmd;
 
+Camera Boturi::camera = Camera(90);
+
 int Boturi::fpsCap;
 
 VkPresentModeKHR presentMode;
@@ -259,38 +261,16 @@ void Boturi::init(GameConfiguration config)
 	config.writeToFile("config");
 
 	shaders.push_back(Shader({ "default-v.vert", "default-f.frag" },
-		{ UNIFORM_BUFFER, TEXTURE_SAMPLER },
-		{ MVP_MATRIX },
+		{ TEXTURE_SAMPLER, UNIFORM_BUFFER, UNIFORM_BUFFER },
+		{ MVP_MATRIX, LIGHT },
 		true));
 
 	makeDescriptors();
 	makePipelines();
 
+	camera.setProjectionMatrix();
+
 	cmd = CommandBuffer(objects);
-}
-
-void Boturi::run()
-{
-	bool shouldEnd = false;
-	while (!shouldEnd)
-	{
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT || (event.type == SDL_WINDOWEVENT &&
-				event.window.event == SDL_WINDOWEVENT_CLOSE))
-				shouldEnd = true;
-
-			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED)
-				refresh();
-
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
-				shouldEnd = true;
-		}
-		draw();
-	}
-
-	vkDeviceWaitIdle(device);
 }
 
 void Boturi::printError(const char* message)
@@ -358,6 +338,8 @@ void Boturi::refresh()
 
 void Boturi::exit()
 {
+	vkDeviceWaitIdle(device);
+
 	for (auto obj : objects)
 		obj.cleanup();
 
@@ -409,6 +391,9 @@ size_t Boturi::getUniformSize(UniformType type)
 	{
 	case MVP_MATRIX:
 		return sizeof(MVPMatrix);
+		break;
+	case LIGHT:
+		return sizeof(Light);
 		break;
 	default:
 		Boturi::printError("The given uniform type does not exist");

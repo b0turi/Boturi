@@ -5,24 +5,17 @@ VkDescriptorSetLayout Descriptor::makeDescriptorSetLayout(std::vector<BindingTyp
 {
 	std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-	for (size_t i = 0; i < definition.size(); i++)
+	for (int i = 0; i < definition.size(); i++)
 	{
 		VkDescriptorSetLayoutBinding binding = {};
 		binding.binding = i;
 		binding.descriptorCount = 1;
-		binding.pImmutableSamplers = nullptr;
-		
-		switch (definition[i])
-		{
-		case UNIFORM_BUFFER:
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-			break;
-		case TEXTURE_SAMPLER:
-			binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-			break;
-		}
+		binding.descriptorType = (definition[i] == 0) ? 
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER :
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		binding.stageFlags = (definition[i] == 0) ?
+			VK_SHADER_STAGE_VERTEX_BIT :
+			VK_SHADER_STAGE_FRAGMENT_BIT;
 
 		bindings.push_back(binding);
 	}
@@ -74,7 +67,6 @@ VkDescriptorBufferInfo getBufferInfo(UniformBuffer buffer, int index)
 	bufferInfo.buffer = buffer.getBuffer(index);
 	bufferInfo.offset = 0;
 	bufferInfo.range = Boturi::getUniformSize(buffer.getUniformType());
-
 	return bufferInfo;
 }
 
@@ -88,13 +80,31 @@ VkDescriptorImageInfo getImageInfo(Texture texture)
 	return imageInfo;
 }
 
+std::vector<VkDescriptorBufferInfo> fillUniforms(std::vector<UniformBuffer> uniforms, int index)
+{
+	std::vector<VkDescriptorBufferInfo> info = {};
+	for (int i = 0; i < uniforms.size(); i++)
+	{
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = uniforms[i].getBuffer(index);
+		bufferInfo.offset = 0;
+		bufferInfo.range = Boturi::getUniformSize(uniforms[i].getUniformType());
+
+		info.push_back(bufferInfo);
+	}
+
+	return info;
+}
+
 VkResult Descriptor::makeDescriptorSets(
 	std::vector<BindingType> definition, 
 	std::vector<UniformBuffer> uniforms, 
 	std::vector<Texture> textures)
 {
-	VkDescriptorSetLayout desc = Boturi::descriptors[definition];
 
+
+	VkDescriptorSetLayout desc = Boturi::descriptors[definition];
+	
 	std::vector<VkDescriptorSetLayout> layouts(Boturi::numImages, desc);
 	VkDescriptorSetAllocateInfo allocInfo = {};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -108,34 +118,41 @@ VkResult Descriptor::makeDescriptorSets(
 
 	for (uint32_t i = 0; i < Boturi::numImages; i++) 
 	{
+		std::vector<VkDescriptorBufferInfo> unis = fillUniforms(uniforms, i);
+
+
 		int uPtr = 0;
 		int tPtr = 0;
 		std::vector<VkWriteDescriptorSet> descriptorWrites;
 
-		for (size_t j = 0; j < definition.size(); j++)
+		for (int j = 0; j < definition.size(); j++)
 		{
-			VkWriteDescriptorSet descriptorSet = {};
+			VkWriteDescriptorSet set = {};
+			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			set.dstSet = sets[i];
+			set.dstBinding = j;
+			set.dstArrayElement = 0;
+			set.descriptorCount = 1;
+			set.descriptorType = (definition[j] == 0) ?
+				VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER :
+				VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
-			descriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptorSet.dstSet = sets[i];
-			descriptorSet.dstBinding = j;
-			descriptorSet.dstArrayElement = 0;
-			descriptorSet.descriptorCount = 1;
-
-			switch (definition[j])
+			if (definition[j] == 0)
 			{
-			case UNIFORM_BUFFER:
-				descriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorSet.pBufferInfo = &getBufferInfo(uniforms[uPtr], i);
-				uPtr++;
-				break;
-			case TEXTURE_SAMPLER:
-				descriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptorSet.pImageInfo = &getImageInfo(textures[tPtr]);
-				tPtr++;
-				break;
+				set.pBufferInfo = &unis[uPtr];
+				uPtr += 1;
 			}
-			descriptorWrites.push_back(descriptorSet);
+			else
+			{
+				VkDescriptorImageInfo imageInfo = {};
+				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfo.imageView = textures[tPtr].getImageView();
+				imageInfo.sampler = Boturi::getTextureSampler(textures[tPtr].getMipLevels());
+
+				set.pImageInfo = &imageInfo;
+			}
+
+			descriptorWrites.push_back(set);
 		}
 
 		vkUpdateDescriptorSets(Boturi::device, static_cast<uint32_t>(descriptorWrites.size()), 
@@ -145,7 +162,9 @@ VkResult Descriptor::makeDescriptorSets(
 	return VK_SUCCESS;
 }
 
-Descriptor::Descriptor(std::vector<BindingType> definition, std::vector<UniformBuffer> uniforms, std::vector<Texture> textures) 
+Descriptor::Descriptor(std::vector<BindingType> definition, 
+	std::vector<UniformBuffer> uniforms, 
+	std::vector<Texture> textures) 
 {
 	makeDescriptorPool(definition);
 	makeDescriptorSets(definition, uniforms, textures);

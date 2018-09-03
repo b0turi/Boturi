@@ -13,6 +13,7 @@ GameObject::GameObject(std::string mesh, std::string texture, std::string pipeli
 
 	for (auto type : uniformTypes)
 		uniforms.push_back(UniformBuffer(type));
+
 	std::vector<Texture> textures = { Boturi::textures[texture] };
 
 	desc = Descriptor(definition, uniforms, textures);
@@ -21,13 +22,16 @@ GameObject::GameObject(std::string mesh, std::string texture, std::string pipeli
 void GameObject::update(uint32_t imageIndex)
 {
 	MVPMatrix m = {};
-	m.model = glm::translate(glm::mat4(1.0f), position);
-	m.view = glm::lookAt(glm::vec3(2, 2, 2), glm::vec3(0, 0, 0), glm::vec3(0, 0, 1));
-	m.projection = glm::perspective(glm::radians(45.0f), Boturi::aspectRatio, 0.1f, 10.0f);
-	m.projection[1][1] *= -1;
+	m.model = glm::scale(glm::translate(glm::mat4(1.0f), position), glm::vec3(0.5f, 0.5f, 0.5f));
+	m.view = Boturi::camera.viewMatrix();
+	m.projection = Boturi::camera.getProjectionMatrix();
+	
+	Light l = {};
+	l.position = glm::vec4(0, 1, 0,1);
+	l.color = glm::vec4(1,0.9f,0.2f,1);
 
-	for (auto uni : uniforms)
-		uni.update(&m, imageIndex);
+    uniforms[0].update(&m, imageIndex);
+	uniforms[1].update(&l, imageIndex);
 }
 
 void GameObject::move(glm::vec3 amount)

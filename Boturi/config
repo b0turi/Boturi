@@ -1,8 +1,8 @@
 DebugMode 1
-Width 900
-Height 600
-Fullscreen 0
-VSync 0
+Width 1920
+Height 1080
+Fullscreen 1
+VSync 1
 Resizable 0
 Title Boturi Game Engine
 Version 1.0.0

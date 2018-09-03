@@ -13,6 +13,7 @@
 #include "Vulkan/Shader.h"
 #include "Vulkan/Pipeline.h"
 #include "Vulkan/Mesh.h"
+#include "Camera.h"
 #include "GameObject.h"
 #include "Vulkan/CommandBuffer.h"
 #include <iostream>
@@ -32,8 +33,7 @@ private:
 	
 	static int fpsCap;
 	static void removeDynamics();
-	static void refresh();
-	static void draw();
+	
 
 	static std::vector<GameObject> objects;
 	static CommandBuffer cmd;
@@ -47,6 +47,8 @@ public:
 	static std::map<std::string, Texture> textures;
 
 	static bool debugMode;
+	static void refresh();
+	static void draw();
 
 	static SDL_Window * window;
 	static float aspectRatio;
@@ -79,6 +81,8 @@ public:
 	static std::vector<VkImageView> swapChainImageViews;
 	static std::vector<VkFramebuffer> frameBuffers;
 
+	static Camera camera;
+
 	static VkFormat imageFormat;
 	static VkExtent2D extent;
 
@@ -96,7 +100,6 @@ public:
 
 
 	static void init(GameConfiguration config);
-	static void run();
 	static void exit();
 
 	static void makeDescriptors();
