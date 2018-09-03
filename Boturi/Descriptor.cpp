@@ -139,6 +139,7 @@ VkResult Descriptor::makeDescriptorSets(
 
 			if (definition[j] == 0)
 			{
+				set.descriptorCount = uniforms[uPtr].size;
 				set.pBufferInfo = &unis[uPtr];
 				uPtr += 1;
 			}

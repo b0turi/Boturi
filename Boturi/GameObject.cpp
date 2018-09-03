@@ -27,11 +27,15 @@ void GameObject::update(uint32_t imageIndex)
 	m.projection = Boturi::camera.getProjectionMatrix();
 	
 	Light l = {};
-	l.position = glm::vec4(0, 1, 0,1);
-	l.color = glm::vec4(1,0.9f,0.2f,1);
+	l.position[0] = glm::vec4(10, 3, 0,1);
+	l.color[0] = glm::vec4(1,0.9f,0.2f,1);
+
+	l.position[1] = glm::vec4(-5, -4, 0, 1);
+	l.color[1] = glm::vec4(0, 0.9f, 1, 1);
 
     uniforms[0].update(&m, imageIndex);
 	uniforms[1].update(&l, imageIndex);
+	uniforms[1].size = 2;
 }
 
 void GameObject::move(glm::vec3 amount)
